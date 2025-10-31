@@ -25,7 +25,7 @@ async def save_kursant_anketa(collection, user_data):
     check_present = 1
     user_data['kafedra'] = int(user_data['fakultet']) * 100 + (int(user_data['year_nabor']) % 10) * 10 + int(user_data['kafedra'])
     user_data["podgruppa"] = user_data["podgruppa"].replace("/", "-", count=-1)
-    #if update.user_data['user_group'] == "Комиссия": check_present = 6
+    if user_data['position'] != "Курсант": check_present = 2
     await collection.update_one(
         {'user_id': user_data['id']},
         {'$set': {'Present': {

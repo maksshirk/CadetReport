@@ -34,24 +34,38 @@ class Doklad(StatesGroup):
 
 # Хэндлер на команду /start
 @router.message(Command("start"))
-async def cmd_start(message: types.Message, state: FSMContext):
+async def cmd_start(message: types.Message, state: FSMContext, bot: Bot):
     await state.clear()
     await search_or_save_user(collection, message.from_user, message.chat)
     check_user = await check_point(collection, message.from_user)
-    if check_user == 0:
-        await message.answer('Добрый день, {}!\nНачните работу с АСУ'.format(message.from_user.first_name), reply_markup=kb.start_keyboard)
-    if check_user == 1:
-        await message.answer('Добрый день, {}!\nНачните работу с АСУ'.format(message.from_user.first_name),
-                             reply_markup=kb.kursant_keyboard)
+    user_status = await bot.get_chat_member(chat_id='-1001371757648', user_id=message.from_user.id)
+    if user_status.status != 'left':
+        if check_user == 0:
+            await message.answer('Добрый день, {}!\nНачните работу с АСУ'.format(message.from_user.first_name),
+                                 reply_markup=kb.start_keyboard)
+        if check_user == 1:
+            await message.answer('Добрый день, {}!\nНачните работу с АСУ'.format(message.from_user.first_name),
+                                 reply_markup=kb.kursant_keyboard)
+        if check_user == 2:
+            await message.answer('Добрый день, {}!\nНачните работу с АСУ'.format(message.from_user.first_name),
+                                 reply_markup=kb.komandir_keyboard)
+    else:
+        await message.answer("Сначала войдите в канал бота по ссылке https://t.me/+A3OPN5aJdoExOTJi\nЗатем нажмите на /start")
+
 
 @router.callback_query(F.data == 'menu')
-async def menu(callback: CallbackQuery, state: FSMContext):
+async def menu(callback: CallbackQuery, state: FSMContext, bot: Bot):
     user_data = await state.get_data()
     check_user = await check_point_menu(collection, user_data['id'])
-    if check_user == 1:
-        await callback.message.answer('Добрый день!\nНачните работу с АСУ', reply_markup=kb.kursant_keyboard)
-    await state.clear()
-
+    user_status = await bot.get_chat_member(chat_id='-1001371757648', user_id=user_data['id'])
+    if user_status.status != 'left':
+        if check_user == 1:
+            await callback.message.answer('Добрый день!\nНачните работу с АСУ', reply_markup=kb.kursant_keyboard)
+        if check_user == 2:
+            await callback.message.answer('Добрый день!\nНачните работу с АСУ', reply_markup=kb.komandir_keyboard)
+        await state.clear()
+    else:
+        await callback.message.answer("Сначала войдите в канал бота по ссылке https://t.me/+A3OPN5aJdoExOTJi\nЗатем нажмите на /start")
 
 
 
@@ -147,51 +161,40 @@ async def registration_ok(callback: CallbackQuery, state: FSMContext):
     await save_kursant_anketa(collection, user_data)
 #Конец регистрации
 
-
-
-
-
-
-
-
-
 #Доклад о состоянии дел. Начало
 @router.callback_query(F.data == 'doklad')
 async def doklad(callback: CallbackQuery, state: FSMContext):
     await callback.message.answer('Отправьте видеозаметку ("кружок") с докладом о состоянии дел. Например "Дома, без происшествий".',
                                    reply_markup=types.ReplyKeyboardRemove())
     await state.set_state(Doklad.video)
-
 @router.message(Doklad.video, F.video_note)
 async def video(message: types.Message, state: FSMContext, bot: Bot):
-    uid = str(uuid.uuid4())
-    await state.update_data(uid=uid)
-    #video_number = 0  # Number video file
-    #while (os.path.isfile(f"video{video_number}.mp4")):  # If the file exists, add one to the number
-    #    video_number += 1
-    #await bot.download_file(file.file_path,
-    #                        f"video{video_number}.mp4") # Download video and save output in file "video.mp4"
-    kursant_lastname = await lastname(collection, message.chat.id)
-    print(kursant_lastname)
-    time = datetime.datetime.now()
-    if 0 <= time.hour <= 12:
-        r = " morning"
+    user_status = await bot.get_chat_member(chat_id='-1001371757648', user_id=message.from_user.id)
+    if user_status.status != 'left':
+        uid = str(uuid.uuid4())
+        await state.update_data(uid=uid)
+        kursant_lastname = await lastname(collection, message.chat.id)
+        time = datetime.datetime.now()
+        if 0 <= time.hour <= 12:
+            r = " morning"
+        else:
+            r = " evening"
+        time = time.strftime("%d.%m.%Y")
+        file_id = message.video_note.file_id  # Get file id
+        file = await bot.get_file(file_id)
+        file = await bot.download_file(file.file_path, f"{kursant_lastname + " " + uid}.mp4")
+        filename = kursant_lastname + " " + uid + ".mp4"
+        group = await get_group(collection, message.chat.id)
+        try:
+            os.replace(filename, "Report/"  + group + "/" + time + r +"/" + filename)
+        except FileNotFoundError:
+            os.makedirs("Report/"  + group + "/" + time + r +"/")
+            os.replace(filename, "Report/"  + group + "/" + time + r +"/" + filename)
+        await state.update_data(id=message.chat.id)
+        await state.set_state(Doklad.geo_location)
+        await message.answer('Отправьте свою геолокацию!', reply_markup=kb.geo_keyboard)
     else:
-        r = " evening"
-    time = time.strftime("%d.%m.%Y")
-    file_id = message.video_note.file_id  # Get file id
-    file = await bot.get_file(file_id)
-    file = await bot.download_file(file.file_path, f"{kursant_lastname + " " + uid}.mp4")
-    filename = kursant_lastname + " " + uid + ".mp4"
-    group = await get_group(collection, message.chat.id)
-    try:
-        os.replace(filename, "Report/"  + group + "/" + time + r +"/" + filename)
-    except FileNotFoundError:
-        os.makedirs("Report/"  + group + "/" + time + r +"/")
-        os.replace(filename, "Report/"  + group + "/" + time + r +"/" + filename)
-    await state.update_data(id=message.chat.id)
-    await state.set_state(Doklad.geo_location)
-    await message.answer('Отправьте свою геолокацию!', reply_markup=kb.geo_keyboard)
+        await message.answer("Чтобы продолжить сначала войдите в канал бота по ссылке https://t.me/+A3OPN5aJdoExOTJi\nЗатем нажмите на /start")
 
 @router.message(Doklad.geo_location, F.location)
 async def geo_location(message: types.Message, state: FSMContext):
@@ -199,3 +202,4 @@ async def geo_location(message: types.Message, state: FSMContext):
     await save_user_location(collection, user_data, message.location)
     await message.answer('Координаты получены. Уникальный код доклада: {}. Пригодится в случае технических неполадок. Запишите его!'.format(user_data['uid']),  reply_markup=types.ReplyKeyboardRemove())
     await message.answer('Спасибо, доклад принят!', reply_markup=kb.back_keyboard)
+#Доклад о состоянии дел. Конец
