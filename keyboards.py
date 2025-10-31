@@ -28,6 +28,15 @@ kafedra_keyboard = ReplyKeyboardMarkup(keyboard=[
     resize_keyboard=True,
     input_field_placeholder='Выберите кафедру')
 
+podgruppa_keyboard = ReplyKeyboardMarkup(keyboard=[
+    [KeyboardButton(text='На моей кафедре нет подгрупп')],
+    [KeyboardButton(text='/1'),
+     KeyboardButton(text='/2'),
+     KeyboardButton(text='/3'),
+     KeyboardButton(text='/4')]],
+    resize_keyboard=True,
+    input_field_placeholder='В какой Вы подгруппе?')
+
 position_keyboard = ReplyKeyboardMarkup(keyboard=[
     [KeyboardButton(text='Начальник курса'),KeyboardButton(text='Курсовой офицер')],
      [KeyboardButton(text='Старшина курса'),KeyboardButton(text='Командир учебной группы')],
@@ -41,15 +50,22 @@ get_number_keyboard = ReplyKeyboardMarkup(keyboard=[[KeyboardButton(text='Отп
 access_keyboard = InlineKeyboardMarkup(inline_keyboard=[
     [InlineKeyboardButton(text='Все правильно! Вперёд!', callback_data='registration_ok')],
     [InlineKeyboardButton(text='Данные неправильные! Заново пройти регистрацию!', callback_data='registration')]
-])
+], resize_keyboard= True)
 
 kursant_keyboard = InlineKeyboardMarkup(inline_keyboard=[
     [InlineKeyboardButton(text='Доклад о состоянии дел', callback_data='doklad')],
     [InlineKeyboardButton(text='Заново пройти регистрацию', callback_data='registration')]
-])
+], resize_keyboard= True)
 
 komandir_keyboard = InlineKeyboardMarkup(inline_keyboard=[
     [InlineKeyboardButton(text='Доклад о состоянии дел', callback_data='doklad')],
     [InlineKeyboardButton(text='Принять доклад от подчиненных', callback_data='prinyt doklad')],
     [InlineKeyboardButton(text='Заново пройти регистрацию', callback_data='registration')]
-])
+], resize_keyboard= True)
+
+geo_keyboard = ReplyKeyboardMarkup(keyboard=[
+    [KeyboardButton(text='Отправить координаты', request_location=True)]], resize_keyboard= True)
+
+back_keyboard = InlineKeyboardMarkup(inline_keyboard=[
+    [InlineKeyboardButton(text='Вернуться в меню', callback_data='menu')]
+], resize_keyboard= True)

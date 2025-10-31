@@ -1,5 +1,6 @@
+import uuid
 from collections import defaultdict
-import os
+import os, datetime
 from aiogram import F, Router
 from aiogram import types, Bot
 from aiogram.filters.command import Command
@@ -21,6 +22,7 @@ class Register(StatesGroup):
     fakultet = State()
     kafedra = State()
     position = State()
+    podgruppa = State()
     last_name = State()
     name = State()
     middle_name = State()
@@ -30,12 +32,10 @@ class Doklad(StatesGroup):
     video = State()
     geo_location = State()
 
-
-
-
 # Хэндлер на команду /start
 @router.message(Command("start"))
-async def cmd_start(message: types.Message):
+async def cmd_start(message: types.Message, state: FSMContext):
+    await state.clear()
     await search_or_save_user(collection, message.from_user, message.chat)
     check_user = await check_point(collection, message.from_user)
     if check_user == 0:
@@ -43,6 +43,15 @@ async def cmd_start(message: types.Message):
     if check_user == 1:
         await message.answer('Добрый день, {}!\nНачните работу с АСУ'.format(message.from_user.first_name),
                              reply_markup=kb.kursant_keyboard)
+
+@router.callback_query(F.data == 'menu')
+async def menu(callback: CallbackQuery, state: FSMContext):
+    user_data = await state.get_data()
+    check_user = await check_point_menu(collection, user_data['id'])
+    if check_user == 1:
+        await callback.message.answer('Добрый день!\nНачните работу с АСУ', reply_markup=kb.kursant_keyboard)
+    await state.clear()
+
 
 
 
@@ -76,10 +85,23 @@ async def register_fakultet(message: types.Message, state: FSMContext):
 @router.message(Register.kafedra)
 async def register_kafedra(message: types.Message, state: FSMContext):
     await state.update_data(kafedra=message.text)
-    await state.set_state(Register.position)
-    await message.answer('Выберите из выпавшего списка должность.'
+    await state.set_state(Register.podgruppa)
+    await message.answer('Если у Вашей кафедры есть подгруппа, выберите свою.'
                                   'Если случайно закрыли клавиатуру, нажмите на символ '
                                   '"шоколадки" рядом с кнопкой отправки сообщения',
+                                   reply_markup=kb.podgruppa_keyboard)
+@router.message(Register.podgruppa)
+async def register_kafedra(message: types.Message, state: FSMContext):
+
+    if message.text == "На моей кафедре нет подгрупп":
+        await state.update_data(podgruppa="")
+    else:
+        await state.update_data(podgruppa=message.text)
+
+    await state.set_state(Register.position)
+    await message.answer('Выберите из выпавшего списка должность.'
+                         'Если случайно закрыли клавиатуру, нажмите на символ '
+                         '"шоколадки" рядом с кнопкой отправки сообщения',
                                    reply_markup=kb.position_keyboard)
 @router.message(Register.position)
 async def register_position(message: types.Message, state: FSMContext):
@@ -106,20 +128,23 @@ async def register_phone_number(message: types.Message, state: FSMContext):
     await state.update_data(phone_number=message.contact.phone_number)
     await state.update_data(id=message.chat.id)
     user_data = await state.get_data()
+    user_data["kafedra"] = int(user_data['fakultet']) * 100 + (int(user_data['year_nabor']) % 10) * 10 + int(user_data['kafedra'])
+
+    await message.answer('Формируем данные...', reply_markup=types.ReplyKeyboardRemove())
     await message.answer(f'Год набора: {user_data["year_nabor"]}\n'
                          f'Факультет: {user_data["fakultet"]}\n'
-                         f'Кафедра: {user_data["kafedra"]}\n'
+                         f'Учебная группа: {str(user_data["kafedra"]) + user_data["podgruppa"]}\n'
                          f'Должность: {user_data["position"]}\n'
                          f'Фамилия: {user_data["last_name"]}\n'
                          f'Имя: {user_data["name"]}\n'
-                         f'Отчетство: {user_data["middle_name"]}\n'
+                         f'Отчество: {user_data["middle_name"]}\n'
                          f'Номер телефона: {user_data["phone_number"]}\n', reply_markup=kb.access_keyboard)
+
 @router.callback_query(F.data == 'registration_ok')
 async def registration_ok(callback: CallbackQuery, state: FSMContext):
-    await callback.message.answer('Регистрация успешна. Приступим к работе.', reply_markup=types.ReplyKeyboardRemove())
+    await callback.message.answer('Регистрация успешна. Приступим к работе.', reply_markup=kb.back_keyboard)
     user_data = await state.get_data()
     await save_kursant_anketa(collection, user_data)
-    await state.clear()
 #Конец регистрации
 
 
@@ -133,17 +158,44 @@ async def registration_ok(callback: CallbackQuery, state: FSMContext):
 #Доклад о состоянии дел. Начало
 @router.callback_query(F.data == 'doklad')
 async def doklad(callback: CallbackQuery, state: FSMContext):
-    await callback.message.answer('Отправьте видеозаметку с докладом о состоянии дел. Например "Дома, без происшествий".',
+    await callback.message.answer('Отправьте видеозаметку ("кружок") с докладом о состоянии дел. Например "Дома, без происшествий".',
                                    reply_markup=types.ReplyKeyboardRemove())
     await state.set_state(Doklad.video)
 
 @router.message(Doklad.video, F.video_note)
 async def video(message: types.Message, state: FSMContext, bot: Bot):
-    print(message.video)
+    uid = str(uuid.uuid4())
+    await state.update_data(uid=uid)
+    #video_number = 0  # Number video file
+    #while (os.path.isfile(f"video{video_number}.mp4")):  # If the file exists, add one to the number
+    #    video_number += 1
+    #await bot.download_file(file.file_path,
+    #                        f"video{video_number}.mp4") # Download video and save output in file "video.mp4"
+    kursant_lastname = await lastname(collection, message.chat.id)
+    print(kursant_lastname)
+    time = datetime.datetime.now()
+    if 0 <= time.hour <= 12:
+        r = " morning"
+    else:
+        r = " evening"
+    time = time.strftime("%d.%m.%Y")
     file_id = message.video_note.file_id  # Get file id
-    file = await bot.get_file(file_id)  # Get file path
-    video_number = 0  # Number video file
-    while (os.path.isfile(f"video{video_number}.mp4")):  # If the file exists, add one to the number
-        video_number += 1
-    await bot.download_file(file.file_path,
-                            f"video{video_number}.mp4")  # Download video and save output in file "video.mp4"
+    file = await bot.get_file(file_id)
+    file = await bot.download_file(file.file_path, f"{kursant_lastname + " " + uid}.mp4")
+    filename = kursant_lastname + " " + uid + ".mp4"
+    group = await get_group(collection, message.chat.id)
+    try:
+        os.replace(filename, "Report/"  + group + "/" + time + r +"/" + filename)
+    except FileNotFoundError:
+        os.makedirs("Report/"  + group + "/" + time + r +"/")
+        os.replace(filename, "Report/"  + group + "/" + time + r +"/" + filename)
+    await state.update_data(id=message.chat.id)
+    await state.set_state(Doklad.geo_location)
+    await message.answer('Отправьте свою геолокацию!', reply_markup=kb.geo_keyboard)
+
+@router.message(Doklad.geo_location, F.location)
+async def geo_location(message: types.Message, state: FSMContext):
+    user_data = await state.get_data()
+    await save_user_location(collection, user_data, message.location)
+    await message.answer('Координаты получены. Уникальный код доклада: {}. Пригодится в случае технических неполадок. Запишите его!'.format(user_data['uid']),  reply_markup=types.ReplyKeyboardRemove())
+    await message.answer('Спасибо, доклад принят!', reply_markup=kb.back_keyboard)

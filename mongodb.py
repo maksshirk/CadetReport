@@ -66,6 +66,7 @@ def save_user_location(mdb, user, b, location, time, problems):
                   }
          })
     return user
+
 def check_point(mdb, effective_user):
     check = mdb.users.find_one({"user_id": effective_user.id})
     return check['Present']['check_present']
