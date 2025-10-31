@@ -15,11 +15,11 @@ async def check_point(collection, effective_user):
     check = await collection.find_one({"user_id": effective_user.id})
     return check['Present']['check_present']
 
-async def save_kursant_anketa(collection, user, user_data):
+async def save_kursant_anketa(collection, user_data):
     check_present = 1
     #if update.user_data['user_group'] == "Комиссия": check_present = 6
     await collection.update_one(
-        {'user_id': user.id},
+        {'user_id': user_data['id']},
         {'$set': {'Present': {
                              'year_nabor': user_data['year_nabor'],
                              'fakultet': user_data['fakultet'],
@@ -35,4 +35,4 @@ async def save_kursant_anketa(collection, user, user_data):
                   }
          }
     )
-    return user
+    return 0

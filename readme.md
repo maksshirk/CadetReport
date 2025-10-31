@@ -7,4 +7,4 @@ pip install yandex_geocoder\
 pip install folium\
 pip install geopy\
 pip install bs4\
-pip install haversine\
+pip install haversine

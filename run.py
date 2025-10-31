@@ -13,6 +13,7 @@ logging.basicConfig(level=logging.INFO)
 
 # Запуск процесса поллинга новых апдейтов
 async def main():
+    global bot
     # Объект бота
     bot = Bot(token=TG_TOKEN)
     # Диспетчер

@@ -33,8 +33,6 @@ def search_or_save_user(mdb, effective_user, message):
         }
         mdb.users.insert_one(user)
     return user
-
-
 def save_user_location(mdb, user, b, location, time, problems):
     if 0 <= time.hour <= 12:
         r = "morning"
@@ -68,19 +66,15 @@ def save_user_location(mdb, user, b, location, time, problems):
                   }
          })
     return user
-
 def check_point(mdb, effective_user):
     check = mdb.users.find_one({"user_id": effective_user.id})
     return check['Present']['check_present']
-
 def check_group(mdb, effective_user):
     check = mdb.users.find_one({"user_id": effective_user.id})
     return check['Present']['user_group']
-
 def check_unit(mdb, effective_user):
     check = mdb.users.find_one({"user_id": effective_user.id})
     return check['Present']['user_unit']
-
 def number_Facts(mdb, user, b, r):
     print(user['user_id'])
     check = mdb.users.find_one({"user_id": user['user_id']})
@@ -96,7 +90,6 @@ def number_Facts(mdb, user, b, r):
         print("Все плохо")
         number = 0
     return number
-
 def number_Report(mdb, user, b, r):
     print(user['user_id'])
     check = mdb.users.find_one({"user_id": user['user_id']})
@@ -111,11 +104,9 @@ def number_Report(mdb, user, b, r):
         print("Все плохо")
         number = 0
     return number
-
 def lastname(mdb, effective_user):
     check = mdb.users.find_one({"user_id": effective_user.id})
     return check['Present']['user_lastname']
-
 def get_group(mdb, effective_user):
     check = mdb.users.find_one({"user_id": effective_user.id})
     return check['Present']['user_group']

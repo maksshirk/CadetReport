@@ -37,3 +37,19 @@ position_keyboard = ReplyKeyboardMarkup(keyboard=[
     input_field_placeholder='Выберите должность')
 
 get_number_keyboard = ReplyKeyboardMarkup(keyboard=[[KeyboardButton(text='Отправить номер', request_contact = True)]], resize_keyboard= True)
+
+access_keyboard = InlineKeyboardMarkup(inline_keyboard=[
+    [InlineKeyboardButton(text='Все правильно! Вперёд!', callback_data='registration_ok')],
+    [InlineKeyboardButton(text='Данные неправильные! Заново пройти регистрацию!', callback_data='registration')]
+])
+
+kursant_keyboard = InlineKeyboardMarkup(inline_keyboard=[
+    [InlineKeyboardButton(text='Доклад о состоянии дел', callback_data='doklad')],
+    [InlineKeyboardButton(text='Заново пройти регистрацию', callback_data='registration')]
+])
+
+komandir_keyboard = InlineKeyboardMarkup(inline_keyboard=[
+    [InlineKeyboardButton(text='Доклад о состоянии дел', callback_data='doklad')],
+    [InlineKeyboardButton(text='Принять доклад от подчиненных', callback_data='prinyt doklad')],
+    [InlineKeyboardButton(text='Заново пройти регистрацию', callback_data='registration')]
+])
