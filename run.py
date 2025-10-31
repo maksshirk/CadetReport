@@ -1,23 +1,27 @@
-import asyncio
+import asyncio, settings, datetime, pymongo
+from datetime import datetime
 import logging
 from aiogram import Bot, Dispatcher, types
 from aiogram.filters.command import Command
+from aiogram.types import Message
+from aiogram.filters import CommandStart
+from handlers import router
+from settings import TG_TOKEN, MONGODB_LINK
 
 # Включаем логирование, чтобы не пропустить важные сообщения
 logging.basicConfig(level=logging.INFO)
-# Объект бота
-bot = Bot(token="1492698891:AAGU8L-qNCxzR4ujplLU7egBJyrifdKBYT8")
-# Диспетчер
-dp = Dispatcher()
-
-# Хэндлер на команду /start
-@dp.message(Command("start"))
-async def cmd_start(message: types.Message):
-    await message.answer("Hello!")
 
 # Запуск процесса поллинга новых апдейтов
 async def main():
+    # Объект бота
+    bot = Bot(token=TG_TOKEN)
+    # Диспетчер
+    dp = Dispatcher()
+    dp.include_router(router)
     await dp.start_polling(bot)
 
 if __name__ == "__main__":
-    asyncio.run(main())
+    try:
+        asyncio.run(main())
+    except KeyboardInterrupt:
+        print("Бот выключен.")

@@ -1,5 +1,10 @@
-Обязательно установить:
-pip install aiogram
-pip install motor
-pip install asyncio
-pip install pymongo
+## Обязательно установить: 
+pip install aiogram\
+pip install motor\
+pip install asyncio\
+pip install pymongo\
+pip install yandex_geocoder\
+pip install folium\
+pip install geopy\
+pip install bs4\
+pip install haversine\
