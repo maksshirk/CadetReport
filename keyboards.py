@@ -63,9 +63,26 @@ komandir_keyboard = InlineKeyboardMarkup(inline_keyboard=[
     [InlineKeyboardButton(text='Заново пройти регистрацию', callback_data='registration')]
 ], resize_keyboard= True)
 
+nachalnik_keyboard = InlineKeyboardMarkup(inline_keyboard=[
+    [InlineKeyboardButton(text='Доклад о состоянии дел', callback_data='doklad')],
+    [InlineKeyboardButton(text='Принять доклад от подчиненных', callback_data='prinyt doklad')],
+    [InlineKeyboardButton(text='Ввести адреса проживания', callback_data='put_address')],
+    [InlineKeyboardButton(text='Заново пройти регистрацию', callback_data='registration')]
+], resize_keyboard= True)
+
 geo_keyboard = ReplyKeyboardMarkup(keyboard=[
     [KeyboardButton(text='Отправить координаты', request_location=True)]], resize_keyboard= True)
 
 back_keyboard = InlineKeyboardMarkup(inline_keyboard=[
+    [InlineKeyboardButton(text='Вернуться в меню', callback_data='menu')]
+], resize_keyboard= True)
+
+back_address_keyboard = InlineKeyboardMarkup(inline_keyboard=[
+    [InlineKeyboardButton(text='Ввести еще один адрес данному курсанту', callback_data='put_address_dop')],
+    [InlineKeyboardButton(text='Закончить ввод адресов', callback_data='put_address_end')]
+], resize_keyboard= True)
+
+back_address_next_keyboard = InlineKeyboardMarkup(inline_keyboard=[
+    [InlineKeyboardButton(text='Ввести адрес следующего курсанта', callback_data='put_address')],
     [InlineKeyboardButton(text='Вернуться в меню', callback_data='menu')]
 ], resize_keyboard= True)

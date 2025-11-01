@@ -32,6 +32,12 @@ class Doklad(StatesGroup):
     video = State()
     geo_location = State()
 
+class Address(StatesGroup):
+    put_address = State()
+    get_dop_address = State()
+    begin = State()
+    get_address = State()
+
 # Хэндлер на команду /start
 @router.message(Command("start"))
 async def cmd_start(message: types.Message, state: FSMContext, bot: Bot):
@@ -49,6 +55,9 @@ async def cmd_start(message: types.Message, state: FSMContext, bot: Bot):
         if check_user == 2:
             await message.answer('Добрый день, {}!\nНачните работу с АСУ'.format(message.from_user.first_name),
                                  reply_markup=kb.komandir_keyboard)
+        if check_user == 3:
+            await message.answer('Добрый день, {}!\nНачните работу с АСУ'.format(message.from_user.first_name),
+                                 reply_markup=kb.nachalnik_keyboard)
     else:
         await message.answer("Сначала войдите в канал бота по ссылке https://t.me/+A3OPN5aJdoExOTJi\nЗатем нажмите на /start")
 
@@ -56,13 +65,15 @@ async def cmd_start(message: types.Message, state: FSMContext, bot: Bot):
 @router.callback_query(F.data == 'menu')
 async def menu(callback: CallbackQuery, state: FSMContext, bot: Bot):
     user_data = await state.get_data()
-    check_user = await check_point_menu(collection, user_data['id'])
-    user_status = await bot.get_chat_member(chat_id='-1001371757648', user_id=user_data['id'])
+    check_user = await check_point_menu(collection, callback.from_user.id)
+    user_status = await bot.get_chat_member(chat_id='-1001371757648', user_id=callback.from_user.id)
     if user_status.status != 'left':
         if check_user == 1:
             await callback.message.answer('Добрый день!\nНачните работу с АСУ', reply_markup=kb.kursant_keyboard)
         if check_user == 2:
             await callback.message.answer('Добрый день!\nНачните работу с АСУ', reply_markup=kb.komandir_keyboard)
+        if check_user == 3:
+            await callback.message.answer('Добрый день!\nНачните работу с АСУ', reply_markup=kb.nachalnik_keyboard)
         await state.clear()
     else:
         await callback.message.answer("Сначала войдите в канал бота по ссылке https://t.me/+A3OPN5aJdoExOTJi\nЗатем нажмите на /start")
@@ -161,6 +172,9 @@ async def registration_ok(callback: CallbackQuery, state: FSMContext):
     await save_kursant_anketa(collection, user_data)
 #Конец регистрации
 
+
+
+
 #Доклад о состоянии дел. Начало
 @router.callback_query(F.data == 'doklad')
 async def doklad(callback: CallbackQuery, state: FSMContext):
@@ -203,3 +217,34 @@ async def geo_location(message: types.Message, state: FSMContext):
     await message.answer('Координаты получены. Уникальный код доклада: {}. Пригодится в случае технических неполадок. Запишите его!'.format(user_data['uid']),  reply_markup=types.ReplyKeyboardRemove())
     await message.answer('Спасибо, доклад принят!', reply_markup=kb.back_keyboard)
 #Доклад о состоянии дел. Конец
+
+
+
+
+
+#Ввод адресов проживания
+@router.callback_query(F.data == 'put_address')
+async def put_address(callback: CallbackQuery, state: FSMContext):
+    kursant = await poisk_kursanta(collection, callback.from_user.id)
+    await callback.message.answer('Введите адрес проживания следующего курсанта.\n{}'.format(kursant['Present']['user_lastname'] + " "
+                                                                                             + kursant['Present']['user_name'] + " "
+                                                                                             + kursant['Present']['user_middlename']),
+                                   reply_markup=types.ReplyKeyboardRemove())
+    await state.update_data(user_id=kursant['user_id'])
+    await state.set_state(Address.get_address)
+@router.message(Address.get_address)
+async def get_address(message: types.Message, state: FSMContext):
+    user_data = await state.get_data()
+    await put_address_from_coords(collection, user_data['user_id'], message.text)
+    await message.answer('Адрес отправлен в базу данных!', reply_markup=kb.back_address_keyboard)
+    await state.set_state(Address.get_dop_address)
+@router.callback_query(F.data == 'put_address_dop')
+async def put_address_dop(callback: CallbackQuery, state: FSMContext):
+    await callback.message.answer('Введите следующий адрес проживания.', reply_markup=types.ReplyKeyboardRemove())
+    await state.set_state(Address.get_address)
+@router.callback_query(F.data == 'put_address_end')
+async def put_address_end(callback: CallbackQuery, state: FSMContext):
+    user_data = await state.get_data()
+    await save_kursant_address(collection, user_data['user_id'])
+    await callback.message.answer('Вернуться в меню или продолжить вводить адреса других курсантов?', reply_markup=kb.back_address_next_keyboard)
+    await state.set_state(Address.begin)

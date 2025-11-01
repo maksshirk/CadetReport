@@ -790,11 +790,8 @@ def lets_go(bot, update):
     return "put_address_from_coords"
 
 def put_address_from_coords(bot, update):
-    print("тут")
     user_id = update.user_data['find_user_id']
-    print(user_id)
     address = bot.message.text
-    print(address)
     try:
         client = Client(YANDEX_TOKEN)
         print("вот тут")
