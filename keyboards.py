@@ -54,19 +54,22 @@ access_keyboard = InlineKeyboardMarkup(inline_keyboard=[
 
 kursant_keyboard = InlineKeyboardMarkup(inline_keyboard=[
     [InlineKeyboardButton(text='Доклад о состоянии дел', callback_data='doklad')],
+    [InlineKeyboardButton(text='У меня обновились сведения по месту проживания', callback_data='reset_address_key')],
     [InlineKeyboardButton(text='Заново пройти регистрацию', callback_data='registration')]
 ], resize_keyboard= True)
 
 komandir_keyboard = InlineKeyboardMarkup(inline_keyboard=[
     [InlineKeyboardButton(text='Доклад о состоянии дел', callback_data='doklad')],
-    [InlineKeyboardButton(text='Принять доклад от подчиненных', callback_data='prinyt doklad')],
+    [InlineKeyboardButton(text='Принять доклад от подчиненных', callback_data='prinyt_doklad')],
+    [InlineKeyboardButton(text='У меня обновились сведения по месту проживания', callback_data='reset_address_key')],
     [InlineKeyboardButton(text='Заново пройти регистрацию', callback_data='registration')]
 ], resize_keyboard= True)
 
 nachalnik_keyboard = InlineKeyboardMarkup(inline_keyboard=[
     [InlineKeyboardButton(text='Доклад о состоянии дел', callback_data='doklad')],
-    [InlineKeyboardButton(text='Принять доклад от подчиненных', callback_data='prinyt doklad')],
+    [InlineKeyboardButton(text='Принять доклад от подчиненных', callback_data='prinyt_doklad')],
     [InlineKeyboardButton(text='Ввести адреса проживания', callback_data='put_address')],
+    [InlineKeyboardButton(text='У меня обновились сведения по месту проживания', callback_data='reset_address_key')],
     [InlineKeyboardButton(text='Заново пройти регистрацию', callback_data='registration')]
 ], resize_keyboard= True)
 

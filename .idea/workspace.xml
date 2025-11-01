@@ -4,12 +4,11 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="6ee8723f-1caa-466f-abb6-1e2802cd2ad8" name="Changes" comment="Немного подлатал">
+    <list default="true" id="6ee8723f-1caa-466f-abb6-1e2802cd2ad8" name="Changes" comment="Теперь можно присваивать адреса пользователям">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/functions.py" beforeDir="false" afterPath="$PROJECT_DIR$/functions.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/handlers.py" beforeDir="false" afterPath="$PROJECT_DIR$/handlers.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/keyboards.py" beforeDir="false" afterPath="$PROJECT_DIR$/keyboards.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/mongodb.py" beforeDir="false" afterPath="$PROJECT_DIR$/mongodb.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -93,7 +92,8 @@
       <option name="presentableId" value="Default" />
       <updated>1761810587499</updated>
       <workItem from="1761810588553" duration="54710000" />
-      <workItem from="1761975862648" duration="12813000" />
+      <workItem from="1761975862648" duration="12850000" />
+      <workItem from="1762023244495" duration="3764000" />
     </task>
     <task id="LOCAL-00001" summary="Hello world для нового бота">
       <option name="closed" value="true" />
@@ -135,7 +135,15 @@
       <option name="project" value="LOCAL" />
       <updated>1761947727105</updated>
     </task>
-    <option name="localTasksCounter" value="6" />
+    <task id="LOCAL-00006" summary="Теперь можно присваивать адреса пользователям">
+      <option name="closed" value="true" />
+      <created>1762002274317</created>
+      <option name="number" value="00006" />
+      <option name="presentableId" value="LOCAL-00006" />
+      <option name="project" value="LOCAL" />
+      <updated>1762002274318</updated>
+    </task>
+    <option name="localTasksCounter" value="7" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -158,11 +166,12 @@
     <MESSAGE value="Начинаем работу с докладами. Прием видеозаметок" />
     <MESSAGE value="Доклад готов. Сохранение видео в папочку Report" />
     <MESSAGE value="Немного подлатал" />
-    <option name="LAST_COMMIT_MESSAGE" value="Немного подлатал" />
+    <MESSAGE value="Теперь можно присваивать адреса пользователям" />
+    <option name="LAST_COMMIT_MESSAGE" value="Теперь можно присваивать адреса пользователям" />
   </component>
   <component name="com.intellij.coverage.CoverageDataManagerImpl">
     <SUITE FILE_PATH="coverage/CadetReport$main.coverage" NAME="main Coverage Results" MODIFIED="1761815231256" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/CadetReport$handlers.coverage" NAME="handlers Coverage Results" MODIFIED="1761851487098" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
-    <SUITE FILE_PATH="coverage/CadetReport$run.coverage" NAME="run Coverage Results" MODIFIED="1761994155717" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/CadetReport$run.coverage" NAME="run Coverage Results" MODIFIED="1762027805146" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
   </component>
 </project>

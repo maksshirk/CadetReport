@@ -222,16 +222,19 @@ async def geo_location(message: types.Message, state: FSMContext):
 
 
 
-#Ввод адресов проживания
+#Ввод адресов проживания. Начало
 @router.callback_query(F.data == 'put_address')
 async def put_address(callback: CallbackQuery, state: FSMContext):
-    kursant = await poisk_kursanta(collection, callback.from_user.id)
-    await callback.message.answer('Введите адрес проживания следующего курсанта.\n{}'.format(kursant['Present']['user_lastname'] + " "
-                                                                                             + kursant['Present']['user_name'] + " "
-                                                                                             + kursant['Present']['user_middlename']),
-                                   reply_markup=types.ReplyKeyboardRemove())
-    await state.update_data(user_id=kursant['user_id'])
-    await state.set_state(Address.get_address)
+    try:
+        kursant = await poisk_kursanta(collection, callback.from_user.id)
+        await callback.message.answer('Введите адрес проживания следующего курсанта.\n{}'.format(kursant['Present']['user_lastname'] + " "
+                                                                                                 + kursant['Present']['user_name'] + " "
+                                                                                                 + kursant['Present']['user_middlename']),
+                                       reply_markup=types.ReplyKeyboardRemove())
+        await state.update_data(user_id=kursant['user_id'])
+        await state.set_state(Address.get_address)
+    except Exception as e:
+        await callback.message.answer('Отсуствуют курсанты, у которых не указано место проживания', reply_markup=kb.back_keyboard)
 @router.message(Address.get_address)
 async def get_address(message: types.Message, state: FSMContext):
     user_data = await state.get_data()
@@ -248,3 +251,8 @@ async def put_address_end(callback: CallbackQuery, state: FSMContext):
     await save_kursant_address(collection, user_data['user_id'])
     await callback.message.answer('Вернуться в меню или продолжить вводить адреса других курсантов?', reply_markup=kb.back_address_next_keyboard)
     await state.set_state(Address.begin)
+@router.callback_query(F.data == 'reset_address_key')
+async def reset_address_key(callback: CallbackQuery, state: FSMContext):
+    await reset_address(collection, callback.from_user.id)
+    await callback.message.answer('База данных готова к обновлению места проживания.', reply_markup=kb.back_keyboard)
+#Ввод адресов проживания. Конец
