@@ -1,6 +1,10 @@
 import datetime
+
+from aiogram.types import FSInputFile
+
 from settings import YANDEX_TOKEN
 from yandex_geocoder import Client
+from geopy.distance import geodesic
 
 async def search_or_save_user(collection, effective_user, message):
     user = await collection.find_one({"user_id": effective_user.id})
@@ -159,75 +163,93 @@ async def reset_address(collection, user_id):
 
 
 
-def find_report(bot, mdb, user_group, kursant_unit):
+async def find_report(collection, user_id, callback,kb):
+    nachalnik = await collection.find_one({"user_id": user_id})
+    year_nabor = nachalnik['Present']['year_nabor']
+    fakultet = nachalnik['Present']['fakultet']
+    user_group = nachalnik['Present']['user_group']
+    user_unit = nachalnik['Present']['user_unit']
+    if user_unit == "Начальник курса" or user_unit == "Курсовой офицер" or user_unit == "Старшина курса":
+        cur = collection.find({
+            "Present.year_nabor": year_nabor,
+            "Present.fakultet": fakultet
+        })
+    if user_unit == "Командир учебной группы":
+        cur = collection.find({
+            "Present.year_nabor": year_nabor,
+            "Present.fakultet": fakultet,
+            "Present.user_group": user_group
+        })
+    if user_unit == "Командир 1 отд-я":
+        cur = collection.find({
+            "Present.year_nabor": year_nabor,
+            "Present.fakultet": fakultet,
+            "Present.user_group": user_group,
+            "Present.user_unit": "Курсант 1 отд-я"
+        })
+    if user_unit == "Командир 2 отд-я":
+        cur = collection.find({
+            "Present.year_nabor": year_nabor,
+            "Present.fakultet": fakultet,
+            "Present.user_group": user_group,
+            "Present.user_unit": "Курсант 2 отд-я"
+        })
+    if user_unit == "Командир 3 отд-я":
+        cur = collection.find({
+            "Present.year_nabor": year_nabor,
+            "Present.fakultet": fakultet,
+            "Present.user_group": user_group,
+            "Present.user_unit": "Курсант 3 отд-я"
+        })
     time = datetime.datetime.now()
     if 0 <= time.hour <= 12:
         time_of_day = "morning"
     else:
         time_of_day = "evening"
     day = time.strftime("%d-%m-%Y")
-    all_ok = "<b>Курсанты не имеющие проблем на данный момент:</b>"
-    problems = "<b>Курсанты, имеющие проблемы:</b>"
-    not_ok = "<b>Курсанты, не совершившие доклад:</b>"
+    all_ok = "<span style='background-color:#00FF00'><b>Курсанты не имеющие проблем на данный момент:</b><br>"
+    not_ok = "</span><br><span style='background-color:#FF0000'><b>Курсанты, не совершившие доклад:</b><br>"
     score_all_ok = 0
-    score_problems = 0
     score_not_ok = 0
-    if user_group == "91 курс":
-        all_ok = "<b>901 учебная группа:</b>"
-        problems = "<b>901 учебная группа:</b>"
-        not_ok = "<b>901 учебная группа:</b>"
-        score_all_ok = 0
-        score_problems = 0
-        score_not_ok = 0
-        # 901 группа
-        all_ok = all_ok + "\n<b>Курсанты не имеющие проблем на данный момент:</b>"
-        problems = problems + "\n<b>Курсанты, имеющие проблемы:</b>"
-        not_ok = not_ok + "\n<b>Курсанты, не совершившие доклад:</b>"
-        cur = mdb.users.find({'Present.user_group': "901"})
-        cur = cur.sort("Present.user_lastname", 1)
-        for doc in cur:
-            print (doc["Present"]["user_lastname"] + " " + doc["Present"]["user_name"] + " " + doc["Present"]["user_middlename"])
-            number = "number " + time_of_day
+    cur = cur.sort("Present.user_lastname", 1)
+    async for doc in cur:
+        number = "number " + time_of_day
+        try:
+            number = doc["Facts"][day][number]["number"]
+            number = str(number) + " " + time_of_day
             try:
-                number = doc["Facts"][day][number]["number"]
-                number = str(number) + " " + time_of_day
-                try:
-                    get_address_from_coords(str(doc["Facts"][day][number]["latitude"]), str(doc["Facts"][day][number]["longitude"]), doc)
-                    home = (float(doc["Present"]["address"]["latitude"]), float(doc["Present"]["address"]["longitude"]))
+                count_address = doc["Present"]["address"]["count"]
+                i = 0
+                distance = []
+                while i <= count_address:
+                    home = (float(doc["Present"]["address"][str(i)]["latitude"]), float(doc["Present"]["address"][str(i)]["longitude"]))
                     point = (float(doc["Facts"][day][number]["latitude"]), float(doc["Facts"][day][number]["longitude"]))
-                    distance = geodesic(point, home).m
-                    print(str(round(distance)))
-                    if doc["Facts"][day][number]["problems"] == "Здоров. Без происшествий и проблем, требующих вмешательств.":
-                        score_all_ok = score_all_ok + 1
-                        all_ok = all_ok + "\n<b>" + str(score_all_ok) + ".</b> " + doc["Present"]["user_lastname"] + " " + doc["Present"]["user_name"] + " " + doc["Present"]["user_middlename"] \
-                                 + "\n<b>Время отметки: </b>" + doc["Facts"][day][number]["time"] \
-                                 + "\n<b>Расстояние до места проведения отпуска: </b>" + str(round(distance)) + " метров"
-                    else:
-                        score_problems = score_problems + 1
-                        problems = problems + "\n<b>" + str(score_problems) + ".</b> " + doc["Present"]["user_lastname"] + " " + doc["Present"]["user_name"] + " " + doc["Present"]["user_middlename"] \
-                                   + "\n<b>Время отметки: </b>" + doc["Facts"][day][number]["time"] \
-                                   + "\n<b>Расстояние до места проведения отпуска: </b>" + str(round(distance)) + " метров" \
-                                   + "\n<b>Проблемы: </b>" + doc["Facts"][day][number]["problems"]
-                except Exception as ex:
-                    print(ex)
+                    distance.append(geodesic(point, home).m)
+                    i = i + 1
+                score_all_ok = score_all_ok + 1
+
+
+                if min(distance) < 500:
+                    all_ok = all_ok + "\n<b>" + str(score_all_ok) + ".</b> " + doc["Present"]["user_lastname"] + " " + doc["Present"]["user_name"] + " " + doc["Present"]["user_middlename"] + "<br>"\
+                             + "\n<b>Время отметки: </b>" + doc["Facts"][day][number]["time"] + "<br>" \
+                             + "\n<b>Расстояние до места проживания: </b>" + str(round(min(distance))) + " метров<br>"
+                else:
+                    all_ok = all_ok + "\n<b>" + str(score_all_ok) + ".</b> " + doc["Present"]["user_lastname"] + " " + doc["Present"]["user_name"] + " " + doc["Present"]["user_middlename"] + "<br>"\
+                             + "\n<b>Время отметки: </b>" + doc["Facts"][day][number]["time"] + "<br>" \
+                             + "\n</span><span style='background-color:#FF0000'><b>Расстояние до места проживания: </b>" + str(round(min(distance))) + " метров</span><span style='background-color:#00FF00'><br>"
             except Exception as ex:
                 print(ex)
-                score_not_ok = score_not_ok + 1
-                if 2 <= doc["Present"]["check_present"] <= 4:
-                    not_ok = not_ok + "\n<b>" + str(score_not_ok) + ".</b> " + doc["Present"]["user_lastname"] + " " + \
-                         doc["Present"]["user_name"] + " " + doc["Present"]["user_middlename"] + "\n<b>Номер телефона для связи: </b>" + doc["Present"]["user_phone"] \
-                         + "\n<b>Мать: </b>" + doc["SOS"]["user_lastname_mother"] + " " + doc["SOS"]["user_name_mother"] + " " + doc["SOS"]["user_middlename_mother"] \
-                         + "\n<b>Телефон матери: </b>" + doc["SOS"]["user_phone_mother"] \
-                         + "\n<b>Адрес матери: </b>" + doc["SOS"]["user_address_mother"] \
-                         + "\n<b>Отец: </b>" + doc["SOS"]["user_lastname_father"] + " " + doc["SOS"]["user_name_father"] + " " + doc["SOS"]["user_middlename_father"] \
-                         + "\n<b>Телефон отца: </b>" + doc["SOS"]["user_phone_father"] \
-                         + "\n<b>Адрес отца: </b>" + doc["SOS"]["user_address_father"] \
-                         + "\n<b>Друг (подруга и т.д.): </b>" + doc["SOS"]["user_lastname_other"] + " " + doc["SOS"]["user_name_other"] + " " + doc["SOS"]["user_middlename_other"] \
-                         + "\n<b>Телефон друга: </b>" + doc["SOS"]["user_phone_other"] \
-                         + "\n<b>Адрес друга: </b>" + doc["SOS"]["user_address_other"]
-                else:
-                    not_ok = not_ok + "\n<b>" + str(score_not_ok) + ".</b> " + doc["Present"]["user_lastname"] + " " + \
-                         doc["Present"]["user_name"] + " " + doc["Present"]["user_middlename"] + "\n<b>Номер телефона для связи: </b>" + doc["Present"]["user_phone"]
-        bot.message.reply_text(all_ok, parse_mode=telegram.ParseMode.HTML)
-        bot.message.reply_text("\n" + problems, parse_mode=telegram.ParseMode.HTML)
-        bot.message.reply_text("\n" + not_ok, parse_mode=telegram.ParseMode.HTML)
+        except Exception as ex:
+            print(ex)
+            score_not_ok = score_not_ok + 1
+            not_ok = not_ok + "\n<b>" + str(score_not_ok) + ".</b> " + doc["Present"]["user_lastname"] + " " + \
+                 doc["Present"]["user_name"] + " " + doc["Present"]["user_middlename"] + "<br>" + "\n<b>Номер телефона для связи: </b>" + doc["Present"]["user_phone"] + "<br></span>"
+    f = open(day + " " + time_of_day + " " + nachalnik['Present']['user_lastname'] + ".html", 'w')
+    f.write(all_ok + "\n" + not_ok)
+    f.close()
+    f = FSInputFile(day + " " + time_of_day + " " + nachalnik['Present']['user_lastname'] + ".html")
+    await callback.message.answer_document(f)
+    await callback.message.answer("Полный доклад в файле выше.\n", reply_markup=kb.back_keyboard)
+
+
+

@@ -78,11 +78,6 @@ async def menu(callback: CallbackQuery, state: FSMContext, bot: Bot):
     else:
         await callback.message.answer("Сначала войдите в канал бота по ссылке https://t.me/+A3OPN5aJdoExOTJi\nЗатем нажмите на /start")
 
-
-
-
-
-
 #Начало регистрации
 @router.callback_query(F.data == 'registration')
 async def registration(callback: CallbackQuery, state: FSMContext):
@@ -172,9 +167,6 @@ async def registration_ok(callback: CallbackQuery, state: FSMContext):
     await save_kursant_anketa(collection, user_data)
 #Конец регистрации
 
-
-
-
 #Доклад о состоянии дел. Начало
 @router.callback_query(F.data == 'doklad')
 async def doklad(callback: CallbackQuery, state: FSMContext):
@@ -218,10 +210,6 @@ async def geo_location(message: types.Message, state: FSMContext):
     await message.answer('Спасибо, доклад принят!', reply_markup=kb.back_keyboard)
 #Доклад о состоянии дел. Конец
 
-
-
-
-
 #Ввод адресов проживания. Начало
 @router.callback_query(F.data == 'put_address')
 async def put_address(callback: CallbackQuery, state: FSMContext):
@@ -256,3 +244,9 @@ async def reset_address_key(callback: CallbackQuery, state: FSMContext):
     await reset_address(collection, callback.from_user.id)
     await callback.message.answer('База данных готова к обновлению места проживания.', reply_markup=kb.back_keyboard)
 #Ввод адресов проживания. Конец
+
+
+
+@router.callback_query(F.data == 'prinyt_doklad')
+async def prinyt_doklad(callback: CallbackQuery, state: FSMContext, bot: Bot):
+    await find_report(collection, callback.from_user.id, callback, kb)
