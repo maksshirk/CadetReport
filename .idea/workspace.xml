@@ -4,11 +4,8 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="6ee8723f-1caa-466f-abb6-1e2802cd2ad8" name="Changes" comment="Прием докладов сделан">
+    <list default="true" id="6ee8723f-1caa-466f-abb6-1e2802cd2ad8" name="Changes" comment="Дали старт апробации">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/functions.py" beforeDir="false" afterPath="$PROJECT_DIR$/functions.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/handlers.py" beforeDir="false" afterPath="$PROJECT_DIR$/handlers.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/keyboards.py" beforeDir="false" afterPath="$PROJECT_DIR$/keyboards.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/readme.md" beforeDir="false" afterPath="$PROJECT_DIR$/readme.md" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -96,7 +93,7 @@
       <workItem from="1761810588553" duration="54710000" />
       <workItem from="1761975862648" duration="12850000" />
       <workItem from="1762023244495" duration="8942000" />
-      <workItem from="1762083624743" duration="10468000" />
+      <workItem from="1762083624743" duration="12164000" />
     </task>
     <task id="LOCAL-00001" summary="Hello world для нового бота">
       <option name="closed" value="true" />
@@ -162,7 +159,15 @@
       <option name="project" value="LOCAL" />
       <updated>1762033460578</updated>
     </task>
-    <option name="localTasksCounter" value="9" />
+    <task id="LOCAL-00009" summary="Дали старт апробации">
+      <option name="closed" value="true" />
+      <created>1762099981817</created>
+      <option name="number" value="00009" />
+      <option name="presentableId" value="LOCAL-00009" />
+      <option name="project" value="LOCAL" />
+      <updated>1762099981817</updated>
+    </task>
+    <option name="localTasksCounter" value="10" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -188,7 +193,8 @@
     <MESSAGE value="Теперь можно присваивать адреса пользователям" />
     <MESSAGE value="Закончил работу с вводом адресов. Приступаю к созданию функции для приема докладов" />
     <MESSAGE value="Прием докладов сделан" />
-    <option name="LAST_COMMIT_MESSAGE" value="Прием докладов сделан" />
+    <MESSAGE value="Дали старт апробации" />
+    <option name="LAST_COMMIT_MESSAGE" value="Дали старт апробации" />
   </component>
   <component name="com.intellij.coverage.CoverageDataManagerImpl">
     <SUITE FILE_PATH="coverage/CadetReport$main.coverage" NAME="main Coverage Results" MODIFIED="1761815231256" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
