@@ -8,3 +8,9 @@ pip install folium\
 pip install geopy\
 pip install bs4\
 pip install haversine
+
+## To-do лист: 
+Сделать статусы\
+Автоматические объявления\
+Информация об аккаунте\
+Кнопка доклада доступна только в определенное время (Готово)

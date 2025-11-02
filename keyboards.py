@@ -20,7 +20,7 @@ fakultet_keyboard = ReplyKeyboardMarkup(keyboard=[
     resize_keyboard=True,
     input_field_placeholder='Выберите факультет')
 
-kafedra_keyboard = ReplyKeyboardMarkup(keyboard=[
+kafedra_keyboard = ReplyKeyboardMarkup(keyboard=[[KeyboardButton(text='Управление факультета')],
     [KeyboardButton(text='1'), KeyboardButton(text='2'),
     KeyboardButton(text='3'), KeyboardButton(text='4'),
     KeyboardButton(text='5')], [KeyboardButton(text='6'),
@@ -29,7 +29,7 @@ kafedra_keyboard = ReplyKeyboardMarkup(keyboard=[
     input_field_placeholder='Выберите кафедру')
 
 podgruppa_keyboard = ReplyKeyboardMarkup(keyboard=[
-    [KeyboardButton(text='На моей кафедре нет подгрупп')],
+    [KeyboardButton(text='На моей кафедре/в управлении нет подгрупп')],
     [KeyboardButton(text='/1'),
      KeyboardButton(text='/2'),
      KeyboardButton(text='/3'),
@@ -45,7 +45,7 @@ position_keyboard = ReplyKeyboardMarkup(keyboard=[
     resize_keyboard=True,
     input_field_placeholder='Выберите должность')
 
-get_number_keyboard = ReplyKeyboardMarkup(keyboard=[[KeyboardButton(text='Отправить номер', request_contact = True)]], resize_keyboard= True)
+get_number_keyboard = ReplyKeyboardMarkup(keyboard=[[KeyboardButton(text='Отправить номер. Нажми на меня', request_contact = True)]], resize_keyboard= True)
 
 access_keyboard = InlineKeyboardMarkup(inline_keyboard=[
     [InlineKeyboardButton(text='Все правильно! Вперёд!', callback_data='registration_ok')],
@@ -74,7 +74,7 @@ nachalnik_keyboard = InlineKeyboardMarkup(inline_keyboard=[
 ], resize_keyboard= True)
 
 geo_keyboard = ReplyKeyboardMarkup(keyboard=[
-    [KeyboardButton(text='Отправить координаты', request_location=True)]], resize_keyboard= True)
+    [KeyboardButton(text='Отправить координаты. Нажми на меня', request_location=True)]], resize_keyboard= True)
 
 back_keyboard = InlineKeyboardMarkup(inline_keyboard=[
     [InlineKeyboardButton(text='Вернуться в меню', callback_data='menu')]
