@@ -1,4 +1,4 @@
-import uuid
+import uuid, zipfile
 from collections import defaultdict
 import os, datetime
 from aiogram import F, Router
@@ -268,13 +268,11 @@ async def reset_address_key(callback: CallbackQuery, state: FSMContext):
 @router.callback_query(F.data == 'prinyt_doklad')
 async def prinyt_doklad(callback: CallbackQuery, state: FSMContext, bot: Bot):
     await find_report(collection, callback.from_user.id, callback, kb)
+    await get_video_note(collection, callback.from_user.id, callback, kb)
 
 @router.callback_query(F.data == 'create_map_knopka')
 async def create_map_knopka(callback: CallbackQuery, state: FSMContext, bot: Bot):
     await create_map(collection, callback.from_user.id, callback, kb)
-
-
-
 
 
 @router.callback_query(F.data == 'put_address_me')

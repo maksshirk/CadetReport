@@ -1,4 +1,4 @@
-import datetime, folium
+import datetime, folium, zipfile
 
 from aiogram.types import FSInputFile
 
@@ -499,3 +499,70 @@ async def create_map(collection, user_id, callback, kb):
     f = FSInputFile("Карты/Обстановка на " + time_of_day + " " + day + " " + hour + ".html")
     await callback.message.answer_document(f)
     await callback.message.answer("Полный доклад в файле выше.\n", reply_markup=kb.back_keyboard)
+
+
+async def get_video_note(collection, user_id, callback,kb):
+    nachalnik = await collection.find_one({"user_id": user_id})
+    year_nabor = nachalnik['Present']['year_nabor']
+    fakultet = nachalnik['Present']['fakultet']
+    user_group = nachalnik['Present']['user_group']
+    user_unit = nachalnik['Present']['user_unit']
+    if user_unit == "Начальник курса" or user_unit == "Курсовой офицер" or user_unit == "Старшина курса":
+        cur = collection.find({
+            "Present.year_nabor": year_nabor,
+            "Present.fakultet": fakultet
+        })
+    if user_unit == "Командир учебной группы":
+        cur = collection.find({
+            "Present.year_nabor": year_nabor,
+            "Present.fakultet": fakultet,
+            "Present.user_group": user_group
+        })
+    if user_unit == "Командир 1 отд-я":
+        cur = collection.find({
+            "Present.year_nabor": year_nabor,
+            "Present.fakultet": fakultet,
+            "Present.user_group": user_group,
+            "Present.user_unit": "Курсант 1 отд-я"
+        })
+    if user_unit == "Командир 2 отд-я":
+        cur = collection.find({
+            "Present.year_nabor": year_nabor,
+            "Present.fakultet": fakultet,
+            "Present.user_group": user_group,
+            "Present.user_unit": "Курсант 2 отд-я"
+        })
+    if user_unit == "Командир 3 отд-я":
+        cur = collection.find({
+            "Present.year_nabor": year_nabor,
+            "Present.fakultet": fakultet,
+            "Present.user_group": user_group,
+            "Present.user_unit": "Курсант 3 отд-я"
+        })
+    time_old = datetime.datetime.now()
+    if 0 <= time_old.hour <= 12:
+        time_of_day = "morning"
+        time_of_day_facts = "1 morning"
+    else:
+        time_of_day = "evening"
+        time_of_day_facts = "1 evening"
+    time = time_old.strftime("%d.%m.%Y")
+    time_facts = time_old.strftime("%d-%m-%Y")
+    cur = cur.sort("Present.user_group", 1)
+    zip_file_name = 'Report/Видеозаметки на ' + time + " " + time_of_day + " " + nachalnik['Present']['user_lastname'] + '.zip'
+    file_names = []
+    async for doc in cur:
+        if doc["Present"]['user_unit'] == "Начальник курса" or doc["Present"]['user_unit'] == "Курсовой офицер":
+            continue
+        try:
+            name = "Report/" + doc["Present"]['user_group'] + "/" + time + " " + time_of_day + "/" + doc["Present"]['user_lastname'] + " " + doc["Facts"][time_facts][time_of_day_facts]["uid"] + ".mp4"
+            file_names.append(name)
+        except Exception as ex:
+            print(ex)
+    zip_object = zipfile.ZipFile(zip_file_name, 'w')
+    for file_name in file_names:
+        zip_object.write(file_name, compress_type=zipfile.ZIP_DEFLATED)
+    zip_object.close()
+    f = FSInputFile(zip_file_name)
+    await callback.message.answer_document(f)
+    await callback.message.answer("Видеоролики в файле выше.\n", reply_markup=kb.back_keyboard)
