@@ -38,6 +38,9 @@ class Address(StatesGroup):
     begin = State()
     get_address = State()
 
+class Address_me(StatesGroup):
+    get_address_me = State()
+
 # Хэндлер на команду /start
 @router.message(Command("start"))
 async def cmd_start(message: types.Message, state: FSMContext, bot: Bot):
@@ -265,3 +268,21 @@ async def reset_address_key(callback: CallbackQuery, state: FSMContext):
 @router.callback_query(F.data == 'prinyt_doklad')
 async def prinyt_doklad(callback: CallbackQuery, state: FSMContext, bot: Bot):
     await find_report(collection, callback.from_user.id, callback, kb)
+
+@router.callback_query(F.data == 'create_map_knopka')
+async def create_map_knopka(callback: CallbackQuery, state: FSMContext, bot: Bot):
+    await create_map(collection, callback.from_user.id, callback, kb)
+
+
+
+
+
+@router.callback_query(F.data == 'put_address_me')
+async def put_address_me(callback: CallbackQuery, state: FSMContext):
+    await callback.message.answer('Введите адрес проживания (место проведения отпуска) по образцу: г. Санкт-Петербург, п. Шушары, ул. Школьная , д. 26, кв.51',reply_markup=types.ReplyKeyboardRemove())
+    await state.set_state(Address_me.get_address_me)
+
+@router.message(Address_me.get_address_me)
+async def get_address_me(message: types.Message, state: FSMContext):
+    await put_address_from_coords(collection, message.from_user.id, message.text)
+    await message.answer('Адрес отправлен в базу данных!', reply_markup=kb.back_keyboard)

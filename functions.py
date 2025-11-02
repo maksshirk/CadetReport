@@ -1,4 +1,4 @@
-import datetime
+import datetime, folium
 
 from aiogram.types import FSInputFile
 
@@ -226,9 +226,12 @@ async def find_report(collection, user_id, callback,kb):
     not_ok = "</span><br><span style='background-color:#FF0000'><b>Курсанты, не совершившие доклад:</b><br>"
     score_all_ok = 0
     score_not_ok = 0
-    cur = cur.sort("Present.user_lastname", 1)
+    cur = cur.sort("Present.user_group", 1)
     async for doc in cur:
+        if doc["Present"]['user_unit'] == "Начальник курса" or doc["Present"]['user_unit'] == "Курсовой офицер":
+            continue
         number = "number " + time_of_day
+        i_min = 0
         try:
             number = doc["Facts"][day][number]["number"]
             number = str(number) + " " + time_of_day
@@ -242,24 +245,40 @@ async def find_report(collection, user_id, callback,kb):
                     point = (float(doc["Facts"][day][number]["latitude"]), float(doc["Facts"][day][number]["longitude"]))
                     distance.append(geodesic(point, home).m)
                     i = i + 1
+                i = 0
+                distance_min = 10000000000
+                while i <= count_address:
+                    home = (float(doc["Present"]["address"][str(i)]["latitude"]),
+                            float(doc["Present"]["address"][str(i)]["longitude"]))
+                    point = (float(doc["Facts"][day][number]["latitude"]),
+                             float(doc["Facts"][day][number]["longitude"]))
+                    if geodesic(point, home).m <= distance_min:
+                        distance_min = geodesic(point, home).m
+                        i_min = i
+                    i = i + 1
                 if min(distance) < 500:
-                    all_ok = all_ok + "\n<b>" + str(score_all_ok) + ".</b> " + doc["Present"]["user_lastname"] + " " + doc["Present"]["user_name"] + " " + doc["Present"]["user_middlename"] + "<br>"\
-                             + "\n<b>Время отметки: </b>" + doc["Facts"][day][number]["time"] + "<br>" \
-                             + "\n<b>Расстояние до места проживания: </b>" + str(round(min(distance))) + " метров<br>"
+                    all_ok = all_ok + "\n<b>" + doc["Present"]["user_group"] + " " + str(score_all_ok) + ".</b></span> " + doc["Present"]["user_lastname"] + " " + doc["Present"]["user_name"] + " " + doc["Present"]["user_middlename"] + "<br>"\
+                             + "\n<b>Время отметки: </b>" + doc["Facts"][day][number]["time"] + " <b>Место отметки: </b>" + str(doc["Facts"][day][number]["latitude"]) + ", " + str(doc["Facts"][day][number]["longitude"]) + "<br>" \
+                             + "\n<b>Расстояние до места проживания: </b>" + str(round(min(distance))) + " метров<br><span style='background-color:#00FF00'>"
                 else:
-                    all_ok = all_ok + "\n<b>" + str(score_all_ok) + ".</b> " + doc["Present"]["user_lastname"] + " " + doc["Present"]["user_name"] + " " + doc["Present"]["user_middlename"] + "<br>"\
-                             + "\n<b>Время отметки: </b>" + doc["Facts"][day][number]["time"] + "<br>" \
-                             + "\n</span><span style='background-color:#FF0000'><b>Расстояние до места проживания: </b>" + str(round(min(distance))) + " метров</span><span style='background-color:#00FF00'><br>"
+                    all_ok = all_ok + "\n<b>" + doc["Present"]["user_group"] + " " + str(score_all_ok) + ".</b></span> " + doc["Present"]["user_lastname"] + " " + doc["Present"]["user_name"] + " " + doc["Present"]["user_middlename"] + "<br>"\
+                             + "\n<b>Время отметки: </b>" + doc["Facts"][day][number]["time"] + " <b>Место отметки: </b>" + str(doc["Facts"][day][number]["latitude"]) + ", " + str(doc["Facts"][day][number]["longitude"]) + "<br>" \
+                             + "\n<span style='background-color:#FF0000'><b>Расстояние до места проживания: </b>" + str(round(min(distance))) + " метров</span> <b>Место проживания: </b>" + doc["Present"]["address"][str(i_min)]["address"] + ". <b>Координаты: </b>" + str(doc["Present"]["address"][str(i_min)]["latitude"]) + ", " + str(doc["Present"]["address"][str(i_min)]["longitude"]) + "<span style='background-color:#00FF00'><br>"
             except Exception as ex:
-                all_ok = all_ok + "\n<b>" + str(score_all_ok) + ".</b> " + doc["Present"]["user_lastname"] + " " + \
+                all_ok = all_ok + "\n<b>" + doc["Present"]["user_group"] + " " + str(score_all_ok) + ".</b></span> " + doc["Present"]["user_lastname"] + " " + \
                          doc["Present"]["user_name"] + " " + doc["Present"]["user_middlename"] + "<br>" \
-                         + "\n<b>Время отметки: </b>" + doc["Facts"][day][number]["time"] + "<br>" \
-                         + "\n</span><span style='background-color:#FF0000'><b>У курсанта командованием курса не введены адреса проживания!</b></span><span style='background-color:#00FF00'><br>"
+                         + "\n<b>Время отметки: </b>" + doc["Facts"][day][number]["time"] + " <b>Место отметки: </b>" + str(doc["Facts"][day][number]["latitude"]) + ", " + str(doc["Facts"][day][number]["longitude"]) + "<br>" \
+                         + "\n<span style='background-color:#FF0000'><b>У курсанта командованием курса не введены адреса проживания!</b></span><span style='background-color:#00FF00'>" + "<br>"
         except Exception as ex:
             print(ex)
             score_not_ok = score_not_ok + 1
-            not_ok = not_ok + "\n<b>" + str(score_not_ok) + ".</b> " + doc["Present"]["user_lastname"] + " " + \
-                 doc["Present"]["user_name"] + " " + doc["Present"]["user_middlename"] + "<br>" + "\n<b>Номер телефона для связи: </b>" + doc["Present"]["user_phone"] + "<br></span><span style='background-color:#FF0000'>"
+            try:
+                not_ok = not_ok + "\n<b>" + doc["Present"]["user_group"] + " " + str(score_not_ok) + ".</b></span> " + doc["Present"]["user_lastname"] + " " + \
+                     doc["Present"]["user_name"] + " " + doc["Present"]["user_middlename"] + "<br>" + "\n<b>Номер телефона для связи: </b>" + doc["Present"]["user_phone"] + "<br>\n<b>Место проживания: </b>" + doc["Present"]["address"][str(i_min)]["address"] + ". <b>Координаты: </b>" + str(doc["Present"]["address"][str(i_min)]["latitude"]) + ", " + str(doc["Present"]["address"][str(i_min)]["longitude"]) + "\n<br><span style='background-color:#FF0000'>"
+            except Exception as ex:
+                not_ok = not_ok + "\n<b>" + doc["Present"]["user_group"] + " " + str(score_not_ok) + ".</b></span> " + doc["Present"]["user_lastname"] + " " + \
+                     doc["Present"]["user_name"] + " " + doc["Present"]["user_middlename"] + "<br>" + "\n<b>Номер телефона для связи: </b>" + doc["Present"]["user_phone"] + "<br> <b>Больше данных нет на военнослужащего.</b><br>\n<span style='background-color:#FF0000'>"
+
     f = open("Report/" + day + " " + time_of_day + " " + nachalnik['Present']['user_lastname'] + ".html", 'w')
     f.write(all_ok + "\n" + not_ok)
     f.close()
@@ -275,9 +294,9 @@ async def info_account(collection, user_id):
             "<b>Учебная группа:</b> " + kursant["Present"]["user_group"] + "\n"
             "<b>Должность:</b> " + kursant["Present"]["user_unit"] + "\n"
             "<b>ФИО:</b> " + kursant["Present"]["user_lastname"] + " " + kursant["Present"]["user_name"] + " " + kursant["Present"]["user_middlename"] + "\n"
-            "<b>Номер телефона:</b> " + kursant["Present"]["user_lastname"] + "\n"
+            "<b>Номер телефона:</b> " + kursant["Present"]["user_phone"] + "\n"
             "<b>Статус:</b> " + kursant["Present"]["user_status"] + "\n"
-            "<b>Адреса проживания (включая при нахождении в отпуске):</b> \n"
+            "<b>Адреса проживания (включая при нахождении в отпуске). Для внесения изменений обратитесь к @maksshirk:</b> \n"
             )
     try:
         count = kursant["Present"]["address"]["count"]
@@ -288,3 +307,195 @@ async def info_account(collection, user_id):
     except Exception as ex:
         info = info + "В базе данных адреса отсутствуют\n"
     return info
+
+
+
+async def create_map(collection, user_id, callback, kb):
+    time = datetime.datetime.now()
+    if 0 <= time.hour <= 12:
+        time_of_day = "morning"
+    else:
+        time_of_day = "evening"
+    day = time.strftime("%d-%m-%Y")
+    hour = time.strftime("%H-%M-%S")
+    map = folium.Map(location=[59.812019, 30.378742], zoom_start = 8)
+    nachalnik = await collection.find_one({"user_id": user_id})
+    year_nabor = nachalnik['Present']['year_nabor']
+    fakultet = nachalnik['Present']['fakultet']
+    user_group = nachalnik['Present']['user_group']
+    user_unit = nachalnik['Present']['user_unit']
+    if user_unit == "Начальник курса" or user_unit == "Курсовой офицер" or user_unit == "Старшина курса":
+        cur = collection.find({
+            "Present.year_nabor": year_nabor,
+            "Present.fakultet": fakultet
+        })
+    if user_unit == "Командир учебной группы":
+        cur = collection.find({
+            "Present.year_nabor": year_nabor,
+            "Present.fakultet": fakultet,
+            "Present.user_group": user_group
+        })
+    if user_unit == "Командир 1 отд-я":
+        cur = collection.find({
+            "Present.year_nabor": year_nabor,
+            "Present.fakultet": fakultet,
+            "Present.user_group": user_group,
+            "Present.user_unit": "Курсант 1 отд-я"
+        })
+    if user_unit == "Командир 2 отд-я":
+        cur = collection.find({
+            "Present.year_nabor": year_nabor,
+            "Present.fakultet": fakultet,
+            "Present.user_group": user_group,
+            "Present.user_unit": "Курсант 2 отд-я"
+        })
+    if user_unit == "Командир 3 отд-я":
+        cur = collection.find({
+            "Present.year_nabor": year_nabor,
+            "Present.fakultet": fakultet,
+            "Present.user_group": user_group,
+            "Present.user_unit": "Курсант 3 отд-я"
+        })
+    async for doc in cur:
+        if doc["Present"]['user_unit'] == "Начальник курса" or doc["Present"]['user_unit'] == "Курсовой офицер":
+            continue
+        number = "number " + time_of_day
+        try:
+            number = doc["Facts"][day][number]["number"]
+            number = str(number) + " " + time_of_day
+            try:
+                try:
+                    Family = "<p><b>Мать: </b>" + doc["SOS"]["user_lastname_mother"] + " " + doc["SOS"][
+                        "user_name_mother"] + " " + \
+                             doc["SOS"]["user_middlename_mother"] \
+                             + "<p><b>Телефон матери: </b>" + doc["SOS"]["user_phone_mother"] \
+                             + "<p><b>Адрес матери: </b>" + doc["SOS"]["user_address_mother"] \
+                             + "<p><b>Отец: </b>" + doc["SOS"]["user_lastname_father"] + " " + doc["SOS"][
+                                 "user_name_father"] + " " + \
+                             doc["SOS"]["user_middlename_father"] \
+                             + "<p><b>Телефон отца: </b>" + doc["SOS"]["user_phone_father"] \
+                             + "<p><b>Адрес отца: </b>" + doc["SOS"]["user_address_father"] \
+                             + "<p><b>Друг (подруга и т.д.): </b>" + doc["SOS"]["user_lastname_other"] + " " + \
+                             doc["SOS"][
+                                 "user_name_other"] + " " + doc["SOS"]["user_middlename_other"] \
+                             + "<p><b>Телефон друга: </b>" + doc["SOS"]["user_phone_other"] \
+                             + "<p><b>Адрес друга: </b>" + doc["SOS"]["user_address_other"]
+                except Exception as ex:
+                    Family = "<p>Данных о семье нет"
+                user_name = doc["Present"]["user_lastname"] + " " + doc["Present"]["user_name"] + " " + doc["Present"]["user_middlename"] + " <p>+" + doc["Present"]["user_phone"] + Family
+                P_latitude = float(doc["Facts"][day][number]["latitude"])
+                P_longitude = float(doc["Facts"][day][number]["longitude"])
+                popuptext = user_name
+                iframe = folium.Html(popuptext, script=True)
+                popup = folium.Popup(iframe, max_width=300, min_width=300)
+                folium.Marker(location=[P_latitude, P_longitude], popup= popup, icon=folium.Icon(color = 'gray')).add_to(map)
+                H_latitude_min = 59.825976
+                H_longitude_min = 30.380312
+                distance = 10000000000000
+                try:
+                    count = doc["Present"]["address"]["count"]
+                    i = 0
+                    while i <= count:
+                        print(float(doc["Present"]["address"][str(i)]["latitude"]))
+                        H_latitude = float(doc["Present"]["address"][str(i)]["latitude"])
+                        H_longitude = float(doc["Present"]["address"][str(i)]["longitude"])
+                        home = (H_latitude, H_longitude)
+                        point = (P_latitude, P_longitude)
+                        if geodesic(point, home).m <= distance:
+                            distance = geodesic(point, home).m
+                            H_latitude_min = H_latitude
+                            H_longitude_min = H_longitude
+                            i_min = i
+                        i = i + 1
+                    user_name = doc["Present"]["user_lastname"] + " " + doc["Present"]["user_name"] + " " + \
+                                doc["Present"]["user_middlename"] + " <p>+" + doc["Present"]["user_phone"] + " <p>" + \
+                                doc["Present"]["address"][str(i_min)]["address"]
+                    popuptext = user_name
+                    iframe = folium.Html(popuptext, script=True)
+                    popup = folium.Popup(iframe, max_width=300, min_width=300)
+                    folium.Marker(location=[H_latitude_min, H_longitude_min], popup=popup, icon=folium.Icon(color='blue', icon='home')).add_to(map)
+                except Exception as ex:
+                    print("В базе данных адреса отсутствуют" + ex)
+                folium.PolyLine(locations=[(P_latitude, P_longitude), (H_latitude_min, H_longitude_min)], line_opacity=0.5).add_to(map)
+            except Exception as ex:
+                print(ex)
+                try:
+                    Family = "<p><b>Мать: </b>" + doc["SOS"]["user_lastname_mother"] + " " + doc["SOS"][
+                        "user_name_mother"] + " " + \
+                             doc["SOS"]["user_middlename_mother"] \
+                             + "<p><b>Телефон матери: </b>" + doc["SOS"]["user_phone_mother"] \
+                             + "<p><b>Адрес матери: </b>" + doc["SOS"]["user_address_mother"] \
+                             + "<p><b>Отец: </b>" + doc["SOS"]["user_lastname_father"] + " " + doc["SOS"][
+                                 "user_name_father"] + " " + \
+                             doc["SOS"]["user_middlename_father"] \
+                             + "<p><b>Телефон отца: </b>" + doc["SOS"]["user_phone_father"] \
+                             + "<p><b>Адрес отца: </b>" + doc["SOS"]["user_address_father"] \
+                             + "<p><b>Друг (подруга и т.д.): </b>" + doc["SOS"]["user_lastname_other"] + " " + \
+                             doc["SOS"][
+                                 "user_name_other"] + " " + doc["SOS"]["user_middlename_other"] \
+                             + "<p><b>Телефон друга: </b>" + doc["SOS"]["user_phone_other"] \
+                             + "<p><b>Адрес друга: </b>" + doc["SOS"]["user_address_other"]
+                except Exception as ex:
+                    Family = "<p>Данных о семье нет"
+                try:
+                    count = doc["Present"]["address"]["count"]
+                    i = 0
+                    while i <= count:
+                        H_latitude = float(doc["Present"]["address"][str(i)]["latitude"])
+                        H_longitude = float(doc["Present"]["address"][str(i)]["longitude"])
+                        user_name = doc["Present"]["user_lastname"] + " " + doc["Present"]["user_name"] + " " + doc["Present"]["user_middlename"] + " <p>+" + doc["Present"]["user_phone"] + " <p>" + doc["Present"]["address"][str(i)]["address"]
+                        popuptext = user_name
+                        iframe = folium.Html(popuptext, script=True)
+                        popup = folium.Popup(iframe, max_width=300, min_width=300)
+                        folium.Marker(location=[H_latitude, H_longitude], popup=popup, icon=folium.Icon(color='red', icon='home')).add_to(map)
+                        i = i + 1
+                except Exception as ex:
+                    print("В базе данных адреса отсутствуют")
+        except Exception as ex:
+            print(ex)
+            try:
+                try:
+                    Family = "<p><b>Мать: </b>" + doc["SOS"]["user_lastname_mother"] + " " + doc["SOS"][
+                        "user_name_mother"] + " " + \
+                             doc["SOS"]["user_middlename_mother"] \
+                             + "<p><b>Телефон матери: </b>" + doc["SOS"]["user_phone_mother"] \
+                             + "<p><b>Адрес матери: </b>" + doc["SOS"]["user_address_mother"] \
+                             + "<p><b>Отец: </b>" + doc["SOS"]["user_lastname_father"] + " " + doc["SOS"][
+                                 "user_name_father"] + " " + \
+                             doc["SOS"]["user_middlename_father"] \
+                             + "<p><b>Телефон отца: </b>" + doc["SOS"]["user_phone_father"] \
+                             + "<p><b>Адрес отца: </b>" + doc["SOS"]["user_address_father"] \
+                             + "<p><b>Друг (подруга и т.д.): </b>" + doc["SOS"]["user_lastname_other"] + " " + \
+                             doc["SOS"][
+                                 "user_name_other"] + " " + doc["SOS"]["user_middlename_other"] \
+                             + "<p><b>Телефон друга: </b>" + doc["SOS"]["user_phone_other"] \
+                             + "<p><b>Адрес друга: </b>" + doc["SOS"]["user_address_other"]
+                except Exception as ex:
+                    print(ex)
+                    Family = "<p>Данных о семье нет"
+                try:
+                    count = doc["Present"]["address"]["count"]
+                    i = 0
+                    while i <= count:
+                        H_latitude = float(doc["Present"]["address"][str(i)]["latitude"])
+                        H_longitude = float(doc["Present"]["address"][str(i)]["longitude"])
+                        user_name = doc["Present"]["user_lastname"] + " " + doc["Present"]["user_name"] + " " + doc["Present"]["user_middlename"] + " <p>+" + doc["Present"]["user_phone"] + " <p>" + doc["Present"]["address"][str(i)]["address"]
+                        popuptext = user_name
+                        iframe = folium.Html(popuptext, script=True)
+                        popup = folium.Popup(iframe, max_width=300, min_width=300)
+                        folium.Marker(location=[H_latitude, H_longitude], popup=popup, icon=folium.Icon(color='red', icon='home')).add_to(map)
+                        i = i + 1
+                except Exception as ex:
+                    print("В базе данных адреса отсутствуют")
+            except Exception as ex:
+                print(ex)
+    if 0 <= time.hour <= 12:
+        time_of_day = "утро"
+    else:
+        time_of_day = "вечер"
+    day = time.strftime("%d.%m.%Y")
+    title = "Карты/Обстановка на " + time_of_day + " " + day + " " + hour + ".html"
+    map.save(title)
+    f = FSInputFile("Карты/Обстановка на " + time_of_day + " " + day + " " + hour + ".html")
+    await callback.message.answer_document(f)
+    await callback.message.answer("Полный доклад в файле выше.\n", reply_markup=kb.back_keyboard)
