@@ -81,7 +81,8 @@ komandir_keyboard = InlineKeyboardMarkup(inline_keyboard=[
 
 nachalnik_keyboard = InlineKeyboardMarkup(inline_keyboard=[
     [InlineKeyboardButton(text='Доклад о состоянии дел', callback_data='doklad')],
-    [InlineKeyboardButton(text='Принять доклад от подчиненных', callback_data='prinyt_doklad')],
+    [InlineKeyboardButton(text='Кратко принять доклад от подчиненных', callback_data='prinyt_doklad_fast')],
+    [InlineKeyboardButton(text='Принять доклад от подчиненных в полной форме', callback_data='prinyt_doklad')],
     [InlineKeyboardButton(text='Создать карту обстановки', callback_data='create_map_knopka')],
     [InlineKeyboardButton(text='Ввести адреса проживания', callback_data='put_address')],
     [InlineKeyboardButton(text='Добавить адрес проживания (место проведения отпуска)', callback_data='put_address_me')],

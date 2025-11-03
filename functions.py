@@ -320,7 +320,7 @@ async def find_report(collection, user_id, callback,kb):
                      doc["Present"]["user_name"] + " " + doc["Present"]["user_middlename"] + "<br>" + "\n<b>Номер телефона для связи: </b>" + doc["Present"]["user_phone"] + "<br> <b>Больше данных нет на военнослужащего.</b><br>\n<span style='background-color:#FF0000'>"
 
     f = open("Report/" + day + " " + time_of_day + " " + nachalnik['Present']['user_lastname'] + ".html", 'w')
-    itog = "<b>В системе зарегистрировано: </b>" + str(score_otpusk) + str(score_komandirovka) + str(score_kazarma) + str(score_lazaret) + str(score_hospital) + str(score_yvolnenie) + str(score_on_service) + str(score_vnekazarm) + "<br>" + \
+    itog = "<b>В системе зарегистрировано: </b>" + str(score_otpusk+score_komandirovka+score_kazarma+score_lazaret+score_hospital+score_yvolnenie+score_on_service+score_vnekazarm) + "<br>" + \
            "<b>Доклад поступил (включая отпуск, командировку, увольнение, госпиталь): </b>" +  str(score_all_ok) + "<br>" + \
            "<b>Доклад не поступил: </b>" + str(score_not_ok) + "<br>" + \
             "<b>В казарме: </b>" + str(score_kazarma) + "<br>" + \
@@ -649,3 +649,153 @@ async def get_video_note(collection, user_id, callback,kb):
     #f = FSInputFile(zip_file_name)
     #await callback.message.answer_document(f)
     #await callback.message.answer("Видеоролики в файле выше.\n", reply_markup=kb.back_keyboard)
+
+async def find_report_fast(collection, user_id, callback,kb):
+    nachalnik = await collection.find_one({"user_id": user_id})
+    year_nabor = nachalnik['Present']['year_nabor']
+    fakultet = nachalnik['Present']['fakultet']
+    user_group = nachalnik['Present']['user_group']
+    user_unit = nachalnik['Present']['user_unit']
+    if user_unit == "Начальник курса" or user_unit == "Курсовой офицер" or user_unit == "Старшина курса":
+        cur = collection.find({
+            "Present.year_nabor": year_nabor,
+            "Present.fakultet": fakultet
+        })
+    if user_unit == "Командир учебной группы":
+        cur = collection.find({
+            "Present.year_nabor": year_nabor,
+            "Present.fakultet": fakultet,
+            "Present.user_group": user_group
+        })
+    if user_unit == "Командир 1 отд-я":
+        cur = collection.find({
+            "Present.year_nabor": year_nabor,
+            "Present.fakultet": fakultet,
+            "Present.user_group": user_group,
+            "Present.user_unit": "Курсант 1 отд-я"
+        })
+    if user_unit == "Командир 2 отд-я":
+        cur = collection.find({
+            "Present.year_nabor": year_nabor,
+            "Present.fakultet": fakultet,
+            "Present.user_group": user_group,
+            "Present.user_unit": "Курсант 2 отд-я"
+        })
+    if user_unit == "Командир 3 отд-я":
+        cur = collection.find({
+            "Present.year_nabor": year_nabor,
+            "Present.fakultet": fakultet,
+            "Present.user_group": user_group,
+            "Present.user_unit": "Курсант 3 отд-я"
+        })
+    time = datetime.datetime.now()
+    if 0 <= time.hour <= 12:
+        time_of_day = "morning"
+    else:
+        time_of_day = "evening"
+    day = time.strftime("%d-%m-%Y")
+    all_ok = "<span style='background-color:#00FF00'><b>Курсанты не имеющие проблем на данный момент:</b><br>"
+    all_ok_daleko = "\n<b>Курсанты, которые находятся далеко от места проживания:</b>\n"
+    not_ok = "\n<b>Курсанты, не совершившие доклад:</b>\n"
+    on_service = "<br><b>Курсанты, находящиеся в наряде:</b><br>"
+    lazaret = "<br><b>Курсанты, находящиеся в лазарете:</b><br>"
+    kazarma = "<br><b>Курсанты, находящиеся в казарме:</b><br>"
+    score_all_ok = 0
+    score_not_ok = 0
+    score_on_service = 0
+    score_lazaret = 0
+    score_kazarma = 0
+    score_otpusk = 0
+    score_hospital = 0
+    score_yvolnenie = 0
+    score_komandirovka = 0
+    score_vnekazarm = 0
+    cur = cur.sort("Present.user_group", 1)
+    async for doc in cur:
+        if doc["Present"]['user_unit'] == "Начальник курса" or doc["Present"]['user_unit'] == "Курсовой офицер":
+            continue
+        if doc["Present"]['user_status'] == "В наряде":
+            score_on_service = score_on_service + 1
+            on_service = on_service + "\n<b>" + doc["Present"]["user_group"] + " " + str(score_on_service) + ".</b>" + \
+                     doc["Present"]["user_lastname"] + " " + doc["Present"]["user_name"] + " " + doc["Present"][
+                         "user_middlename"] + "<br>"
+            continue
+        if doc["Present"]['user_status'] == "В лазарете":
+            score_lazaret = score_lazaret + 1
+            lazaret = lazaret + "\n<b>" + doc["Present"]["user_group"] + " " + str(score_lazaret) + ".</b>" + \
+                     doc["Present"]["user_lastname"] + " " + doc["Present"]["user_name"] + " " + doc["Present"][
+                         "user_middlename"] + "<br>"
+            continue
+        if doc["Present"]['user_status'] == "В казарме":
+            score_kazarma = score_kazarma + 1
+            kazarma = kazarma + "\n<b>" + doc["Present"]["user_group"] + " " + str(score_kazarma) + ".</b>" + \
+                     doc["Present"]["user_lastname"] + " " + doc["Present"]["user_name"] + " " + doc["Present"][
+                         "user_middlename"] + "<br>"
+            continue
+        if doc["Present"]['user_status'] == "В отпуске":
+            score_otpusk = score_otpusk + 1
+        if doc["Present"]['user_status'] == "В госпитале":
+            score_hospital = score_hospital + 1
+        if doc["Present"]['user_status'] == "В увольнении":
+            score_yvolnenie = score_yvolnenie + 1
+        if doc["Present"]['user_status'] == "В командировке":
+            score_komandirovka = score_komandirovka + 1
+        if doc["Present"]['user_status'] == "Вне общежития":
+            score_vnekazarm = score_vnekazarm + 1
+        number = "number " + time_of_day
+        i_min = 0
+        try:
+            number = doc["Facts"][day][number]["number"]
+            number = str(number) + " " + time_of_day
+            score_all_ok = score_all_ok + 1
+            try:
+                count_address = doc["Present"]["address"]["count"]
+                i = 0
+                distance = []
+                while i <= count_address:
+                    home = (float(doc["Present"]["address"][str(i)]["latitude"]), float(doc["Present"]["address"][str(i)]["longitude"]))
+                    point = (float(doc["Facts"][day][number]["latitude"]), float(doc["Facts"][day][number]["longitude"]))
+                    distance.append(geodesic(point, home).m)
+                    i = i + 1
+                i = 0
+                distance_min = 10000000000
+                while i <= count_address:
+                    home = (float(doc["Present"]["address"][str(i)]["latitude"]),
+                            float(doc["Present"]["address"][str(i)]["longitude"]))
+                    point = (float(doc["Facts"][day][number]["latitude"]),
+                             float(doc["Facts"][day][number]["longitude"]))
+                    if geodesic(point, home).m <= distance_min:
+                        distance_min = geodesic(point, home).m
+                        i_min = i
+                    i = i + 1
+                if min(distance) < 500:
+                    all_ok = all_ok + "\n<b>" + doc["Present"]["user_group"] + " " + str(score_all_ok) + ".</b></span> " + doc["Present"]["user_lastname"] + " " + doc["Present"]["user_name"] + " " + doc["Present"]["user_middlename"] + "<br>"\
+                             + "\n<b>Время отметки: </b>" + doc["Facts"][day][number]["time"] + " <b>Место отметки: </b>" + str(doc["Facts"][day][number]["latitude"]) + ", " + str(doc["Facts"][day][number]["longitude"]) + "<br>" \
+                             + "\n<b>Расстояние до места проживания: </b>" + str(round(min(distance))) + " метров<br><span style='background-color:#00FF00'>"
+                else:
+                    all_ok_daleko = all_ok_daleko + "<b>" + doc["Present"]["user_group"] + ".</b>" + doc["Present"]["user_lastname"] + " " + doc["Present"]["user_name"] + " " + doc["Present"]["user_middlename"] + ","
+            except Exception as ex:
+                all_ok = all_ok + "\n<b>" + doc["Present"]["user_group"] + " " + str(score_all_ok) + ".</b></span> " + doc["Present"]["user_lastname"] + " " + \
+                         doc["Present"]["user_name"] + " " + doc["Present"]["user_middlename"] + "<br>" \
+                         + "\n<b>Время отметки: </b>" + doc["Facts"][day][number]["time"] + " <b>Место отметки: </b>" + str(doc["Facts"][day][number]["latitude"]) + ", " + str(doc["Facts"][day][number]["longitude"]) + "<br>" \
+                         + "\n<span style='background-color:#FF0000'><b>У курсанта командованием курса не введены адреса проживания!</b></span><span style='background-color:#00FF00'>" + "<br>"
+        except Exception as ex:
+            print(ex)
+            score_not_ok = score_not_ok + 1
+            try:
+                not_ok = not_ok + "<b>" + doc["Present"]["user_group"] + ".</b>" + doc["Present"]["user_lastname"] + " " + \
+                     doc["Present"]["user_name"] + " " + doc["Present"]["user_middlename"] + ","
+            except Exception as ex:
+                not_ok = not_ok + "<b>" + doc["Present"]["user_group"] + ".</b>" + doc["Present"]["user_lastname"] + " " + \
+                     doc["Present"]["user_name"] + " " + doc["Present"]["user_middlename"] + ","
+
+    f = open("Report/" + day + " " + time_of_day + " " + nachalnik['Present']['user_lastname'] + ".html", 'w')
+    day = time.strftime("%d.%m.%Y")
+    itog = "На <b>" + day + " </b> обстановка следующая:\n" + "<b>В системе зарегистрировано: </b>" + str(score_otpusk+score_komandirovka+score_kazarma+score_lazaret+score_hospital+score_yvolnenie+score_on_service+score_vnekazarm) + "\n" + \
+           "<b>Доклад поступил (включая отпуск, командировку, увольнение, госпиталь): </b>" +  str(score_all_ok) + "\n" + \
+           "<b>Доклад не поступил: </b>" + str(score_not_ok) + "\n" + \
+            "<b>В казарме: </b>" + str(score_kazarma) + "\n" + \
+            "<b>В лазарете: </b>" + str(score_lazaret) + "\n" + \
+            "<b>В наряде: </b>" + str(score_on_service) + "\n"
+    f = itog + not_ok + all_ok_daleko
+    await callback.message.answer(f, parse_mode='HTML', reply_markup=kb.back_keyboard)

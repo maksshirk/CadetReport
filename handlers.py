@@ -370,3 +370,7 @@ async def Status_change_get(message: types.Message, state: FSMContext):
                                     })
     await message.answer('Статус изменён!', reply_markup=types.ReplyKeyboardRemove())
     await message.answer('Вернитесь в меню!', reply_markup=kb.back_keyboard)
+
+@router.callback_query(F.data == 'prinyt_doklad_fast')
+async def prinyt_doklad_fast(callback: CallbackQuery, state: FSMContext, bot: Bot):
+    await find_report_fast(collection, callback.from_user.id, callback, kb)
