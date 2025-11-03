@@ -109,14 +109,12 @@ async def number_Facts(collection, user, b, r):
     r = str(r) + " number"
     try:
         number = check['Facts'][b][r]["number"]
-        print(number)
     except Exception as ex:
         number = 0
     return number
 
 async def lastname(collection, effective_user):
     check = await collection.find_one({"user_id": effective_user})
-    print (check['Present']['user_lastname'])
     return check['Present']['user_lastname']
 
 async def get_group(collection, effective_user):
@@ -155,7 +153,7 @@ async def put_address_from_coords(collection, user_id, address):
 
                                     }})
     except Exception as e:
-        print(e)
+        print("Ошибка в блоке отправки адреса базу данных: " + str(e))
 
 async def save_kursant_address(collection, user_id):
     try:
@@ -165,7 +163,7 @@ async def save_kursant_address(collection, user_id):
                                             }
                                     })
     except Exception as e:
-        print(e)
+        print("Ошибка в блоке изменения статуса адреса курсанта: " + str(e))
 
 async def reset_address(collection, user_id):
     try:
@@ -174,7 +172,7 @@ async def reset_address(collection, user_id):
                                         "Present.count": 0
                                     }})
     except Exception as e:
-        print(e)
+        print("Ошибка в блоке обнуления адреса курсанта: " + str(e))
 
 
 
@@ -310,7 +308,6 @@ async def find_report(collection, user_id, callback,kb):
                          + "\n<b>Время отметки: </b>" + doc["Facts"][day][number]["time"] + " <b>Место отметки: </b>" + str(doc["Facts"][day][number]["latitude"]) + ", " + str(doc["Facts"][day][number]["longitude"]) + "<br>" \
                          + "\n<span style='background-color:#FF0000'><b>У курсанта командованием курса не введены адреса проживания!</b></span><span style='background-color:#00FF00'>" + "<br>"
         except Exception as ex:
-            print(ex)
             score_not_ok = score_not_ok + 1
             try:
                 not_ok = not_ok + "\n<b>" + doc["Present"]["user_group"] + " " + str(score_not_ok) + ".</b></span> " + doc["Present"]["user_lastname"] + " " + \
@@ -438,7 +435,6 @@ async def create_map(collection, user_id, callback, kb):
                 popup = folium.Popup(iframe, max_width=300, min_width=300)
                 text_for_yandex = text_for_yandex + "\nvar myPlacemark" + str(yandex_count) + " = new ymaps.Placemark([" + str(P_latitude) + "," +  str(P_longitude) + '],{\n' + "hintContent: '"  + popuptext + "' ,\n" + "balloonContentHeader: '"  + popuptext + "',\n" + "},{\n" + "preset: 'islands#grayDotIcon'\n" + "});\n" + "myMap.geoObjects.add(myPlacemark" + str(yandex_count) + ");\n"
                 folium.Marker(location=[P_latitude, P_longitude], popup= popup, icon=folium.Icon(color = 'gray')).add_to(map)
-                print(str(yandex_count) + "increment")
                 H_latitude_min = 59.825976
                 H_longitude_min = 30.380312
                 distance = 10000000000000
@@ -464,12 +460,9 @@ async def create_map(collection, user_id, callback, kb):
                     popup = folium.Popup(iframe, max_width=300, min_width=300)
                     folium.Marker(location=[H_latitude_min, H_longitude_min], popup=popup, icon=folium.Icon(color='blue', icon='home')).add_to(map)
                     text_for_yandex = text_for_yandex + "\nvar myPlacemark" + str(yandex_count) + " = new ymaps.Placemark([" + str(H_latitude_min) + "," + str(H_longitude_min) + '],{\n' + "hintContent: '" + popuptext + "' ,\n" + "balloonContentHeader: '" + popuptext + "',\n" + "},{\n" + "preset: 'islands#blueDotIcon'\n" + "});\n" + "myMap.geoObjects.add(myPlacemark" + str(yandex_count) + ");\n"
-                    print(str(yandex_count) + "hunger")
                 except Exception as ex:
-                    print(str(yandex_count) + "geely")
-                print("\nlet myPolyline" + str(yandex_count) + " = new ymaps.Polyline([\n[" + str(P_latitude) + "," + str(P_longitude) + '],\n[' + str(H_latitude_min) + "," + str(H_longitude_min) + ']\n]);\n' + "myMap.geoObjects.add(myPolyline" + str(yandex_count) + ");\n")
+                    pass
                 text_for_yandex = text_for_yandex + "\nlet myPolyline" + str(yandex_count) + " = new ymaps.Polyline([\n[" + str(P_latitude) + "," + str(P_longitude) + '],\n[' + str(H_latitude_min) + "," + str(H_longitude_min) + ']\n]);\n' + "myMap.geoObjects.add(myPolyline" + str(yandex_count) + ");\n"
-                print(text_for_yandex)
                 folium.PolyLine(locations=[(P_latitude, P_longitude), (H_latitude_min, H_longitude_min)], line_opacity=0.5).add_to(map)
 
             except Exception as ex:
@@ -503,10 +496,9 @@ async def create_map(collection, user_id, callback, kb):
                         popup = folium.Popup(iframe, max_width=300, min_width=300)
                         folium.Marker(location=[H_latitude, H_longitude], popup=popup, icon=folium.Icon(color='red', icon='home')).add_to(map)
                         text_for_yandex = text_for_yandex + "\nvar myPlacemark" + str(yandex_count) + " = new ymaps.Placemark([" + str(H_latitude) + "," + str(H_longitude) + '],{\n' + "hintContent: '" + popuptext + "' ,\n" + "balloonContentHeader: '" + popuptext + "',\n" + "},{\n" + "preset: 'islands#redDotIcon'\n" + "});\n" + "myMap.geoObjects.add(myPlacemark" + str(yandex_count) + ");\n"
-                        print(str(yandex_count)+ "fight")
                         i = i + 1
                 except Exception as ex:
-                    print(str(yandex_count) + "eagle")
+                    pass
         except Exception as ex:
             try:
                 try:
@@ -539,12 +531,11 @@ async def create_map(collection, user_id, callback, kb):
                         popup = folium.Popup(iframe, max_width=300, min_width=300)
                         folium.Marker(location=[H_latitude, H_longitude], popup=popup, icon=folium.Icon(color='red', icon='home')).add_to(map)
                         text_for_yandex = text_for_yandex + "\nvar myPlacemark" + str(yandex_count) + " = new ymaps.Placemark([" + str(H_latitude) + "," + str(H_longitude) + '],{\n' + "hintContent: '" + popuptext + "' ,\n" + "balloonContentHeader: '" + popuptext + "',\n" + "},{\n" + "preset: 'islands#redDotIcon'\n" + "});\n" + "myMap.geoObjects.add(myPlacemark" + str(yandex_count) + ");\n"
-                        print(str(yandex_count) + "danger")
                         i = i + 1
                 except Exception as ex:
-                    print(str(yandex_count) + "cadet")
+                    pass
             except Exception as ex:
-                print(str(yandex_count) + "baryl")
+                pass
         yandex_count = yandex_count + 1
     if 0 <= time.hour <= 12:
         time_of_day = "утро"
@@ -560,7 +551,7 @@ async def create_map(collection, user_id, callback, kb):
     try:
         shutil.copy2(source, destination)
     except Exception as ex:
-        print(str(yandex_count) + "angel")
+        pass
     # yandex_map = open('Report/Яндекс обстановка на ' + day + " " + time_of_day + " " + nachalnik['Present']['user_lastname'] + ".html", 'w')
     # yandex_map.close()
     file_yandex_name = 'Карты/Яндекс обстановка на ' + day + " " + time_of_day + " " + nachalnik['Present']['user_lastname'] + ".html"
@@ -635,7 +626,7 @@ async def get_video_note(collection, user_id, callback,kb):
             await callback.message.answer_video(video)
             file_names.append(name)
         except Exception as ex:
-            print(ex)
+            pass
     zip_object = zipfile.ZipFile(zip_file_name, 'w')
     #try:
     #    video_clips = [VideoFileClip(video_path) for video_path in file_names]
@@ -780,7 +771,6 @@ async def find_report_fast(collection, user_id, callback,kb):
                          + "\n<b>Время отметки: </b>" + doc["Facts"][day][number]["time"] + " <b>Место отметки: </b>" + str(doc["Facts"][day][number]["latitude"]) + ", " + str(doc["Facts"][day][number]["longitude"]) + "<br>" \
                          + "\n<span style='background-color:#FF0000'><b>У курсанта командованием курса не введены адреса проживания!</b></span><span style='background-color:#00FF00'>" + "<br>"
         except Exception as ex:
-            print(ex)
             score_not_ok = score_not_ok + 1
             try:
                 not_ok = not_ok + "<b>" + doc["Present"]["user_group"] + ".</b>" + doc["Present"]["user_lastname"] + " " + \

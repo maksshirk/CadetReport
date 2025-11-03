@@ -1,6 +1,6 @@
 import uuid, zipfile, asyncio, aioschedule
 from collections import defaultdict
-import os, datetime
+import os, datetime, logging
 from aiogram import F, Router
 from aiogram import types, Bot
 from aiogram.filters.command import Command
@@ -10,6 +10,8 @@ from aiogram.fsm.context import FSMContext
 from settings import TG_TOKEN, MONGODB_LINK, PASSWORD_NKY, PASSWORD_KO, PASSWORD_KUG
 import keyboards as kb
 from functions import *
+logging.basicConfig(level=logging.INFO, filename="py_log.log",filemode="a",
+                    format="%(asctime)s %(levelname)s %(message)s")
 
 import motor.motor_asyncio, pymongo, settings
 
@@ -54,10 +56,11 @@ async def cmd_start(message: types.Message, state: FSMContext, bot: Bot):
     await state.clear()
     await search_or_save_user(collection, message.from_user, message.chat)
     kursant = await collection.find_one({"user_id": message.from_user.id})
+    logging.info("Пользователь с ID: " + str(message.from_user.id) + " " + message.from_user.last_name + " " + message.from_user.first_name + " ввёл команду /start, возможно это его первая запись и он начал регистрацию")
     try:
         info = await info_account(collection, message.from_user.id)
     except Exception as e:
-        print(e)
+        print("Ошибка в блоке старта: " + str(e))
     check_user = await check_point(collection, message.from_user)
     user_status = await bot.get_chat_member(chat_id='-1001371757648', user_id=message.from_user.id)
     if user_status.status != 'left':
@@ -82,9 +85,13 @@ async def menu(callback: CallbackQuery, state: FSMContext, bot: Bot):
     await search_or_save_user_menu(collection, callback.from_user)
     kursant = await collection.find_one({"user_id": callback.from_user.id})
     try:
+        logging.info("Пользователь с ID: " + str(callback.from_user.id) + " " + callback.from_user.last_name + " " + callback.from_user.first_name + " вернулся в меню для работы с ботом")
+    except Exception as ex:
+        logging.info("Ошибка логирования: " + str(ex))
+    try:
         info = await info_account(collection, callback.from_user.id)
     except Exception as e:
-        print(e)
+        print("Ошибка в блоке перехода в меню: " + str(e))
     check_user = await check_point_menu(collection, callback.from_user.id)
     user_status = await bot.get_chat_member(chat_id='-1001371757648', user_id=callback.from_user.id)
     if user_status.status != 'left':
@@ -104,6 +111,10 @@ async def menu(callback: CallbackQuery, state: FSMContext, bot: Bot):
 #Начало регистрации
 @router.callback_query(F.data == 'registration')
 async def registration(callback: CallbackQuery, state: FSMContext):
+    try:
+        logging.info("Пользователь с ID: " + str(callback.from_user.id) + " " + callback.from_user.last_name + " " + callback.from_user.first_name + " начал регистрацию")
+    except Exception as ex:
+        logging.info("Ошибка логирования: " + str(ex))
     await callback.message.answer('Выберите из выпавшего списка год поступления в академию. '
                                   'Если случайно закрыли клавиатуру, нажмите на символ '
                                   '"шоколадки" рядом с кнопкой отправки сообщения',
@@ -111,6 +122,10 @@ async def registration(callback: CallbackQuery, state: FSMContext):
     await state.set_state(Register.year_nabor)
 @router.message(Register.year_nabor)
 async def register_year_nabor(message: types.Message, state: FSMContext):
+    try:
+        logging.info("Пользователь с ID: " + str(message.from_user.id) + " " + message.from_user.last_name + " " + message.from_user.first_name + " вводит год набора при регистрации")
+    except Exception as ex:
+        logging.info("Ошибка логирования: " + str(ex))
     await state.update_data(year_nabor=message.text)
     await state.set_state(Register.fakultet)
     await message.answer('Выберите из выпавшего списка факультет.'
@@ -119,6 +134,10 @@ async def register_year_nabor(message: types.Message, state: FSMContext):
                                    reply_markup=kb.fakultet_keyboard)
 @router.message(Register.fakultet)
 async def register_fakultet(message: types.Message, state: FSMContext):
+    try:
+        logging.info("Пользователь с ID: " + str(message.from_user.id) + " " + message.from_user.last_name + " " + message.from_user.first_name + " вводит факультет при регистрации")
+    except Exception as ex:
+        logging.info("Ошибка логирования: " + str(ex))
     await state.update_data(fakultet=message.text)
     await state.set_state(Register.kafedra)
     await message.answer('Выберите из выпавшего списка номер кафедры, на которой обучаетесь.'
@@ -127,6 +146,10 @@ async def register_fakultet(message: types.Message, state: FSMContext):
                                    reply_markup=kb.kafedra_keyboard)
 @router.message(Register.kafedra)
 async def register_kafedra(message: types.Message, state: FSMContext):
+    try:
+        logging.info("Пользователь с ID: " + str(message.from_user.id) + " " + message.from_user.last_name + " " + message.from_user.first_name + " вводит кафедру при регистрации")
+    except Exception as ex:
+        logging.info("Ошибка логирования: " + str(ex))
     await state.update_data(kafedra=message.text)
     await state.set_state(Register.podgruppa)
     await message.answer('Если у Вашей кафедры есть подгруппа, выберите свою.'
@@ -135,7 +158,10 @@ async def register_kafedra(message: types.Message, state: FSMContext):
                                    reply_markup=kb.podgruppa_keyboard)
 @router.message(Register.podgruppa)
 async def register_kafedra(message: types.Message, state: FSMContext):
-
+    try:
+        logging.info("Пользователь с ID: " + str(message.from_user.id) + " " + message.from_user.last_name + " " + message.from_user.first_name + " выбирает подгруппу при регистрации")
+    except Exception as ex:
+        logging.info("Ошибка логирования: " + str(ex))
     if message.text == "На моей кафедре/в управлении нет подгрупп":
         await state.update_data(podgruppa="")
     else:
@@ -148,6 +174,10 @@ async def register_kafedra(message: types.Message, state: FSMContext):
                                    reply_markup=kb.position_keyboard)
 @router.message(Register.position)
 async def register_position(message: types.Message, state: FSMContext):
+    try:
+        logging.info("Пользователь с ID: " + str(message.from_user.id) + " " + message.from_user.last_name + " " + message.from_user.first_name + " выбирает должность при регистрации")
+    except Exception as ex:
+        logging.info("Ошибка логирования: " + str(ex))
     await state.update_data(position=message.text)
     if message.text == "Начальник курса" or message.text == "Курсовой офицер" or message.text == "Старшина курса":
         await state.set_state(Register.password_nky)
@@ -166,46 +196,89 @@ async def register_position(message: types.Message, state: FSMContext):
 async def register_password_nky(message: types.Message, state: FSMContext):
     await state.update_data(password=message.text)
     if message.text == PASSWORD_NKY:
+        try:
+            logging.warning("Пользователь с ID: " + str(message.from_user.id) + " " + message.from_user.last_name + " " + message.from_user.first_name + " ввел неправильный пароль: " + message.text)
+        except Exception as ex:
+            logging.warning("Ошибка логирования в поле для ввода пароля: " + str(ex))
         await state.set_state(Register.last_name)
         await message.answer('Введите свою фамилию', reply_markup=types.ReplyKeyboardRemove())
     else:
+        try:
+            logging.warning("Пользователь с ID: " + str(message.from_user.id) + " " + message.from_user.last_name + " " + message.from_user.first_name + " ввел неправильный пароль: " + message.text)
+            print("Пользователь с ID: " + str(message.from_user.id) + " " + message.from_user.last_name + " " + message.from_user.first_name + " ввел неправильный пароль: " + message.text)
+        except Exception as ex:
+            logging.warning("Ошибка логирования в поле для ввода пароля: " + str(ex))
         await message.answer('Пароль введён неверно!', reply_markup=kb.back_keyboard)
 
 @router.message(Register.password_kug)
 async def register_password_kug(message: types.Message, state: FSMContext):
     await state.update_data(password=message.text)
     if message.text == PASSWORD_KUG:
+        try:
+            logging.info("Пользователь с ID: " + str(message.from_user.id) + " " + message.from_user.last_name + " " + message.from_user.first_name + " ввёл правильный пароль и переходит в вводу фамилии")
+        except Exception as ex:
+            logging.info("Ошибка логирования: " + str(ex))
         await state.set_state(Register.last_name)
         await message.answer('Введите свою фамилию', reply_markup=types.ReplyKeyboardRemove())
     else:
+        try:
+            logging.warning("Пользователь с ID: " + str(message.from_user.id) + " " + message.from_user.last_name + " " + message.from_user.first_name + " ввел неправильный пароль: " + message.text)
+            print("Пользователь с ID: " + str(message.from_user.id) + " " + message.from_user.last_name + " " + message.from_user.first_name + " ввел неправильный пароль: " + message.text)
+        except Exception as ex:
+            logging.warning("Ошибка логирования в поле для ввода пароля: " + str(ex))
         await message.answer('Пароль введён неверно!', reply_markup=kb.back_keyboard)
 
 @router.message(Register.password_ko)
 async def register_password_ko(message: types.Message, state: FSMContext):
     await state.update_data(password=message.text)
     if message.text == PASSWORD_KO:
+        try:
+            logging.info("Пользователь с ID: " + str(message.from_user.id) + " " + message.from_user.last_name + " " + message.from_user.first_name + " ввёл правильный пароль и переходит в вводу фамилии")
+        except Exception as ex:
+            logging.info("Ошибка логирования: " + str(ex))
         await state.set_state(Register.last_name)
         await message.answer('Введите свою фамилию', reply_markup=types.ReplyKeyboardRemove())
     else:
+        try:
+            logging.warning("Пользователь с ID: " + str(message.from_user.id) + " " + message.from_user.last_name + " " + message.from_user.first_name + " ввел неправильный пароль: " + message.text)
+            print("Пользователь с ID: " + str(message.from_user.id) + " " + message.from_user.last_name + " " + message.from_user.first_name + " ввел неправильный пароль: " + message.text)
+        except Exception as ex:
+            logging.warning("Ошибка логирования в поле для ввода пароля: " + str(ex))
         await message.answer('Пароль введён неверно!', reply_markup=kb.back_keyboard)
 
 @router.message(Register.last_name)
 async def register_last_name(message: types.Message, state: FSMContext):
+    try:
+        logging.info("Пользователь с ID: " + str(message.from_user.id) + " " + message.from_user.last_name + " " + message.from_user.first_name + " вводит фамилию")
+    except Exception as ex:
+        logging.info("Ошибка логирования: " + str(ex))
     await state.update_data(last_name=message.text)
     await state.set_state(Register.name)
     await message.answer('Введите свое имя')
 @router.message(Register.name)
 async def register_name(message: types.Message, state: FSMContext):
+    try:
+        logging.info("Пользователь с ID: " + str(message.from_user.id) + " " + message.from_user.last_name + " " + message.from_user.first_name + " вводит имя")
+    except Exception as ex:
+        logging.info("Ошибка логирования: " + str(ex))
     await state.update_data(name=message.text)
     await state.set_state(Register.middle_name)
     await message.answer('Введите свое отчество')
 @router.message(Register.middle_name)
 async def register_middle_name(message: types.Message, state: FSMContext):
+    try:
+        logging.info("Пользователь с ID: " + str(message.from_user.id) + " " + message.from_user.last_name + " " + message.from_user.first_name + " вводит отчество")
+    except Exception as ex:
+        logging.info("Ошибка логирования: " + str(ex))
     await state.update_data(middle_name=message.text)
     await state.set_state(Register.phone_number)
     await message.answer('Отправьте свой номер через кнопку ниже. Если её нет или она пропала, нажмите на "шоколадку" слева от кнопки "отправить"', reply_markup=kb.get_number_keyboard)
 @router.message(Register.phone_number, F.contact)
 async def register_phone_number(message: types.Message, state: FSMContext):
+    try:
+        logging.info("Пользователь с ID: " + str(message.from_user.id) + " " + message.from_user.last_name + " " + message.from_user.first_name + " отправляет номер телефона")
+    except Exception as ex:
+        logging.info("Ошибка логирования: " + str(ex))
     await state.update_data(phone_number=message.contact.phone_number)
     await state.update_data(id=message.chat.id)
     user_data = await state.get_data()
@@ -223,6 +296,10 @@ async def register_phone_number(message: types.Message, state: FSMContext):
 
 @router.callback_query(F.data == 'registration_ok')
 async def registration_ok(callback: CallbackQuery, state: FSMContext):
+    try:
+        logging.info("Пользователь с ID: " + str(callback.from_user.id) + " " + callback.from_user.last_name + " " + callback.from_user.first_name + " проверяет данные и заканчивает регистрацию")
+    except Exception as ex:
+        logging.info("Ошибка логирования: " + str(ex))
     await callback.message.answer('Регистрация успешна. Приступим к работе.', reply_markup=kb.back_keyboard)
     user_data = await state.get_data()
     await save_kursant_anketa(collection, user_data)
@@ -231,6 +308,10 @@ async def registration_ok(callback: CallbackQuery, state: FSMContext):
 #Доклад о состоянии дел. Начало
 @router.callback_query(F.data == 'doklad')
 async def doklad(callback: CallbackQuery, state: FSMContext):
+    try:
+        logging.info("Пользователь с ID: " + str(callback.from_user.id) + " " + callback.from_user.last_name + " " + callback.from_user.first_name + " приступил к докладу о состоянии дел")
+    except Exception as ex:
+        logging.info("Ошибка логирования: " + str(ex))
     time = datetime.datetime.now()
     if 8 <= time.hour <= 9 or 21 <= time.hour <= 22:
         await callback.message.answer('Отправьте видеозаметку ("кружок") с докладом о состоянии дел. Например "Дома, без происшествий".',
@@ -240,6 +321,10 @@ async def doklad(callback: CallbackQuery, state: FSMContext):
         await callback.message.answer('Доклад принимается утром с 8:00 до 9:00 по МСК и вечером с 21:00 до 22:00 по МСК!', reply_markup=kb.back_keyboard)
 @router.message(Doklad.video, F.video_note)
 async def video(message: types.Message, state: FSMContext, bot: Bot):
+    try:
+        logging.info("Пользователь с ID: " + str(message.from_user.id) + " " + message.from_user.last_name + " " + message.from_user.first_name + " отправил видео о состоянии дел")
+    except Exception as ex:
+        logging.info("Ошибка логирования: " + str(ex))
     user_status = await bot.get_chat_member(chat_id='-1001371757648', user_id=message.from_user.id)
     if user_status.status != 'left':
         uid = str(uuid.uuid4())
@@ -269,6 +354,10 @@ async def video(message: types.Message, state: FSMContext, bot: Bot):
 
 @router.message(Doklad.geo_location, F.location)
 async def geo_location(message: types.Message, state: FSMContext):
+    try:
+        logging.info("Пользователь с ID: " + str(message.from_user.id) + " " + message.from_user.last_name + " " + message.from_user.first_name + " отправил геолокацию, где находится")
+    except Exception as ex:
+        logging.info("Ошибка логирования: " + str(ex))
     user_data = await state.get_data()
     await save_user_location(collection, user_data, message.location)
     await message.answer('Координаты получены. Уникальный код доклада: {}. Пригодится в случае технических неполадок. Запишите его!'.format(user_data['uid']),  reply_markup=types.ReplyKeyboardRemove())
@@ -278,6 +367,10 @@ async def geo_location(message: types.Message, state: FSMContext):
 #Ввод адресов проживания. Начало
 @router.callback_query(F.data == 'put_address')
 async def put_address(callback: CallbackQuery, state: FSMContext):
+    try:
+        logging.info("Пользователь с ID: " + str(callback.from_user.id) + " " + callback.from_user.last_name + " " + callback.from_user.first_name + " вводит адрес курсанта")
+    except Exception as ex:
+        logging.info("Ошибка логирования: " + str(ex))
     try:
         kursant = await poisk_kursanta(collection, callback.from_user.id)
         await callback.message.answer('Введите адрес проживания следующего курсанта.\n{}'.format(kursant['Present']['user_lastname'] + " "
@@ -290,43 +383,75 @@ async def put_address(callback: CallbackQuery, state: FSMContext):
         await callback.message.answer('Отсуствуют курсанты, у которых не указано место проживания', reply_markup=kb.back_keyboard)
 @router.message(Address.get_address)
 async def get_address(message: types.Message, state: FSMContext):
+    try:
+        logging.info("Пользователь с ID: " + str(message.from_user.id) + " " + message.from_user.last_name + " " + message.from_user.first_name + " отправил адрес курсанта")
+    except Exception as ex:
+        logging.info("Ошибка логирования: " + str(ex))
     user_data = await state.get_data()
     await put_address_from_coords(collection, user_data['user_id'], message.text)
     await message.answer('Адрес отправлен в базу данных!', reply_markup=kb.back_address_keyboard)
     await state.set_state(Address.get_dop_address)
 @router.callback_query(F.data == 'put_address_dop')
 async def put_address_dop(callback: CallbackQuery, state: FSMContext):
+    try:
+        logging.info("Пользователю с ID: " + str(callback.from_user.id) + " " + callback.from_user.last_name + " " + callback.from_user.first_name + " предложено ввести следующий адрес проживания")
+    except Exception as ex:
+        logging.info("Ошибка логирования: " + str(ex))
     await callback.message.answer('Введите следующий адрес проживания.', reply_markup=types.ReplyKeyboardRemove())
     await state.set_state(Address.get_address)
 @router.callback_query(F.data == 'put_address_end')
 async def put_address_end(callback: CallbackQuery, state: FSMContext):
+    try:
+        logging.info("Пользователю с ID: " + str(callback.from_user.id) + " " + callback.from_user.last_name + " " + callback.from_user.first_name + " предложено вернуться в меню или перейти к следующему курсанту")
+    except Exception as ex:
+        logging.info("Ошибка логирования: " + str(ex))
     user_data = await state.get_data()
     await save_kursant_address(collection, user_data['user_id'])
     await callback.message.answer('Вернуться в меню или продолжить вводить адреса других курсантов?', reply_markup=kb.back_address_next_keyboard)
     await state.set_state(Address.begin)
 @router.callback_query(F.data == 'reset_address_key')
 async def reset_address_key(callback: CallbackQuery, state: FSMContext):
+    try:
+        logging.info("Пользователь с ID: " + str(callback.from_user.id) + " " + callback.from_user.last_name + " " + callback.from_user.first_name + " хочет обновить свои адреса проживания")
+    except Exception as ex:
+        logging.info("Ошибка логирования: " + str(ex))
     await reset_address(collection, callback.from_user.id)
     await callback.message.answer('База данных готова к обновлению места проживания.', reply_markup=kb.back_keyboard)
 #Ввод адресов проживания. Конец
 
 @router.callback_query(F.data == 'prinyt_doklad')
 async def prinyt_doklad(callback: CallbackQuery, state: FSMContext, bot: Bot):
+    try:
+        logging.info("Пользователь с ID: " + str(callback.from_user.id) + " " + callback.from_user.last_name + " " + callback.from_user.first_name + " принимает доклад у своих подчиненных")
+    except Exception as ex:
+        logging.info("Ошибка логирования: " + str(ex))
     await get_video_note(collection, callback.from_user.id, callback, kb)
     await find_report(collection, callback.from_user.id, callback, kb)
 
 @router.callback_query(F.data == 'create_map_knopka')
 async def create_map_knopka(callback: CallbackQuery, state: FSMContext, bot: Bot):
+    try:
+        logging.info("Пользователь с ID: " + str(callback.from_user.id) + " " + callback.from_user.last_name + " " + callback.from_user.first_name + " создаёт карту обстановки")
+    except Exception as ex:
+        logging.info("Ошибка логирования: " + str(ex))
     await create_map(collection, callback.from_user.id, callback, kb)
 
 
 @router.callback_query(F.data == 'put_address_me')
 async def put_address_me(callback: CallbackQuery, state: FSMContext):
+    try:
+        logging.info("Пользователь с ID: " + str(callback.from_user.id) + " " + callback.from_user.last_name + " " + callback.from_user.first_name + " вводит себе адрес проживания")
+    except Exception as ex:
+        logging.info("Ошибка логирования: " + str(ex))
     await callback.message.answer('Введите адрес проживания (место проведения отпуска) по образцу: г. Санкт-Петербург, п. Шушары, ул. Школьная , д. 26, кв.51',reply_markup=types.ReplyKeyboardRemove())
     await state.set_state(Address_me.get_address_me)
 
 @router.message(Address_me.get_address_me)
 async def get_address_me(message: types.Message, state: FSMContext):
+    try:
+        logging.info("Пользователь с ID: " + str(message.from_user.id) + " " + message.from_user.last_name + " " + message.from_user.first_name + " отправляет адрес проживания")
+    except Exception as ex:
+        logging.info("Ошибка логирования: " + str(ex))
     await put_address_from_coords(collection, message.from_user.id, message.text)
     await message.answer('Адрес отправлен в базу данных!', reply_markup=kb.back_keyboard)
 
@@ -352,16 +477,23 @@ async def about(callback: CallbackQuery):
 @router.callback_query(F.data == 'status_change')
 async def status_change(callback: CallbackQuery, state: FSMContext):
     try:
+        logging.info("Пользователь с ID: " + str(callback.from_user.id) + " " + callback.from_user.last_name + " " + callback.from_user.first_name + " меняет статус")
+    except Exception as ex:
+        logging.info("Ошибка логирования: " + str(ex))
+    try:
         kursant = await collection.find_one({"user_id": callback.from_user.id})
         await callback.message.answer('Ваш статус:\n{}'.format(kursant['Present']['user_status'] + "\n Для того чтобы изменить статус нажмите на одну из нижеуказанных кнопок. Если кнопки закрылись, нажмите на 'шоколадку' слева от кнопки отправить"),
                                        reply_markup=kb.status_keyboard)
         await state.update_data(user_id=kursant['user_id'])
         await state.set_state(Status_change.Status_change_get)
     except Exception as e:
-        print(e)
         await callback.message.answer('Ошибка(', reply_markup=kb.back_keyboard)
 @router.message(Status_change.Status_change_get)
 async def Status_change_get(message: types.Message, state: FSMContext):
+    try:
+        logging.info("Пользователь с ID: " + str(message.from_user.id) + " " + message.from_user.last_name + " " + message.from_user.first_name + " поменял статус на: " + message.text)
+    except Exception as ex:
+        logging.info("Ошибка логирования: " + str(ex))
     user_data = await state.get_data()
     await collection.update_one ({"user_id":user_data['user_id']},
                                     {"$set": {
@@ -373,4 +505,19 @@ async def Status_change_get(message: types.Message, state: FSMContext):
 
 @router.callback_query(F.data == 'prinyt_doklad_fast')
 async def prinyt_doklad_fast(callback: CallbackQuery, state: FSMContext, bot: Bot):
+    try:
+        logging.info("Пользователь с ID: " + str(callback.from_user.id) + " " + callback.from_user.last_name + " " + callback.from_user.first_name + " принял краткий доклад")
+    except Exception as ex:
+        logging.info("Ошибка логирования: " + str(ex))
     await find_report_fast(collection, callback.from_user.id, callback, kb)
+
+@router.callback_query(F.data == 'get_log')
+async def get_log(callback: CallbackQuery, state: FSMContext, bot: Bot):
+    try:
+        logging.info("Пользователь с ID: " + str(callback.from_user.id) + " " + callback.from_user.last_name + " " + callback.from_user.first_name + " запросил лог-файл")
+    except Exception as ex:
+        logging.info("Ошибка логирования: " + str(ex))
+    file_name = "py_log.log"
+    file_name = FSInputFile(file_name)
+    await callback.message.answer_document(file_name)
+    await callback.message.answer('Вот вам лог-файл со всей свежатиной!)', reply_markup=kb.back_keyboard)
