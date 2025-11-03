@@ -35,6 +35,10 @@ class Doklad(StatesGroup):
     video = State()
     geo_location = State()
 
+class Status_change(StatesGroup):
+    Status_change_get = State()
+    Status_change_put = State()
+
 class Address(StatesGroup):
     put_address = State()
     get_dop_address = State()
@@ -326,6 +330,11 @@ async def get_address_me(message: types.Message, state: FSMContext):
     await put_address_from_coords(collection, message.from_user.id, message.text)
     await message.answer('Адрес отправлен в базу данных!', reply_markup=kb.back_keyboard)
 
+@router.callback_query(F.data == 'about')
+async def about(callback: CallbackQuery):
+    await callback.message.answer('Спасибо за то, что принимаете участие в апробации данного бота. Для тех, кому интересно, заходите на мой гитхаб, ставьте звездочки, интересуйтесь разработками дальше! https://github.com/maksshirk/CadetReport', reply_markup=kb.back_keyboard)
+
+
 #@router.message()
 #async def choose_your_dinner():
 #    await Bot.send_message(chat_id=479947781, text="Хей🖖")
@@ -338,3 +347,26 @@ async def get_address_me(message: types.Message, state: FSMContext):
 
 #async def on_startup(dp):
 #    asyncio.create_task(scheduler())
+
+
+@router.callback_query(F.data == 'status_change')
+async def status_change(callback: CallbackQuery, state: FSMContext):
+    try:
+        kursant = await collection.find_one({"user_id": callback.from_user.id})
+        await callback.message.answer('Ваш статус:\n{}'.format(kursant['Present']['user_status'] + "\n Для того чтобы изменить статус нажмите на одну из нижеуказанных кнопок. Если кнопки закрылись, нажмите на 'шоколадку' слева от кнопки отправить"),
+                                       reply_markup=kb.status_keyboard)
+        await state.update_data(user_id=kursant['user_id'])
+        await state.set_state(Status_change.Status_change_get)
+    except Exception as e:
+        print(e)
+        await callback.message.answer('Ошибка(', reply_markup=kb.back_keyboard)
+@router.message(Status_change.Status_change_get)
+async def Status_change_get(message: types.Message, state: FSMContext):
+    user_data = await state.get_data()
+    await collection.update_one ({"user_id":user_data['user_id']},
+                                    {"$set": {
+                                        "Present.user_status": message.text
+                                            }
+                                    })
+    await message.answer('Статус изменён!', reply_markup=types.ReplyKeyboardRemove())
+    await message.answer('Вернитесь в меню!', reply_markup=kb.back_keyboard)

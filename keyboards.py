@@ -45,6 +45,14 @@ position_keyboard = ReplyKeyboardMarkup(keyboard=[
     resize_keyboard=True,
     input_field_placeholder='Выберите должность')
 
+status_keyboard = ReplyKeyboardMarkup(keyboard=[
+    [KeyboardButton(text='Вне общежития'),KeyboardButton(text='В отпуске')],
+     [KeyboardButton(text='В госпитале'),KeyboardButton(text='В наряде')],
+    [KeyboardButton(text='В казарме'),KeyboardButton(text='В лазарете')],
+    [KeyboardButton(text='В увольнении'),KeyboardButton(text='В командировке')]],
+    resize_keyboard=True,
+    input_field_placeholder='Выберите статус')
+
 get_number_keyboard = ReplyKeyboardMarkup(keyboard=[[KeyboardButton(text='Отправить номер. Нажми на меня', request_contact = True)]], resize_keyboard= True)
 
 access_keyboard = InlineKeyboardMarkup(inline_keyboard=[
@@ -55,16 +63,20 @@ access_keyboard = InlineKeyboardMarkup(inline_keyboard=[
 kursant_keyboard = InlineKeyboardMarkup(inline_keyboard=[
     [InlineKeyboardButton(text='Доклад о состоянии дел', callback_data='doklad')],
     [InlineKeyboardButton(text='Добавить адрес проживания (место проведения отпуска)', callback_data='put_address_me')],
+    [InlineKeyboardButton(text='Изменить статус (В наряде, в казарме, в госпитале и т.д.)', callback_data='status_change')],
     #[InlineKeyboardButton(text='У меня обновились сведения по месту проживания', callback_data='reset_address_key')],
-    [InlineKeyboardButton(text='Заново пройти регистрацию', callback_data='registration')]
+    [InlineKeyboardButton(text='Заново пройти регистрацию', callback_data='registration')],
+    [InlineKeyboardButton(text='О разработке бота', callback_data='about')]
 ], resize_keyboard= True)
 
 komandir_keyboard = InlineKeyboardMarkup(inline_keyboard=[
     [InlineKeyboardButton(text='Доклад о состоянии дел', callback_data='doklad')],
     [InlineKeyboardButton(text='Принять доклад от подчиненных', callback_data='prinyt_doklad')],
     [InlineKeyboardButton(text='Добавить адрес проживания (место проведения отпуска)', callback_data='put_address_me')],
+    [InlineKeyboardButton(text='Изменить статус (В наряде, в казарме, в госпитале и т.д.)', callback_data='status_change')],
     #[InlineKeyboardButton(text='У меня обновились сведения по месту проживания', callback_data='reset_address_key')],
-    [InlineKeyboardButton(text='Заново пройти регистрацию', callback_data='registration')]
+    [InlineKeyboardButton(text='Заново пройти регистрацию', callback_data='registration')],
+    [InlineKeyboardButton(text='О разработке бота', callback_data='about')]
 ], resize_keyboard= True)
 
 nachalnik_keyboard = InlineKeyboardMarkup(inline_keyboard=[
@@ -73,8 +85,10 @@ nachalnik_keyboard = InlineKeyboardMarkup(inline_keyboard=[
     [InlineKeyboardButton(text='Создать карту обстановки', callback_data='create_map_knopka')],
     [InlineKeyboardButton(text='Ввести адреса проживания', callback_data='put_address')],
     [InlineKeyboardButton(text='Добавить адрес проживания (место проведения отпуска)', callback_data='put_address_me')],
+    [InlineKeyboardButton(text='Изменить статус (В наряде, в казарме, в госпитале и т.д.)', callback_data='status_change')],
     #[InlineKeyboardButton(text='У меня обновились сведения по месту проживания', callback_data='reset_address_key')],
-    [InlineKeyboardButton(text='Заново пройти регистрацию', callback_data='registration')]
+    [InlineKeyboardButton(text='Заново пройти регистрацию', callback_data='registration')],
+    [InlineKeyboardButton(text='О разработке бота', callback_data='about')]
 ], resize_keyboard= True)
 
 geo_keyboard = ReplyKeyboardMarkup(keyboard=[

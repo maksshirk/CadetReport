@@ -225,11 +225,35 @@ async def find_report(collection, user_id, callback,kb):
     day = time.strftime("%d-%m-%Y")
     all_ok = "<span style='background-color:#00FF00'><b>Курсанты не имеющие проблем на данный момент:</b><br>"
     not_ok = "</span><br><span style='background-color:#FF0000'><b>Курсанты, не совершившие доклад:</b><br>"
+    on_service = "<br><b>Курсанты, находящиеся в наряде:</b><br>"
+    lazaret = "<br><b>Курсанты, находящиеся в лазарете:</b><br>"
+    kazarma = "<br><b>Курсанты, находящиеся в казарме:</b><br>"
     score_all_ok = 0
     score_not_ok = 0
+    score_on_service = 0
+    score_lazaret = 0
+    score_kazarma = 0
     cur = cur.sort("Present.user_group", 1)
     async for doc in cur:
         if doc["Present"]['user_unit'] == "Начальник курса" or doc["Present"]['user_unit'] == "Курсовой офицер":
+            continue
+        if doc["Present"]['user_status'] == "В наряде":
+            score_on_service = score_on_service + 1
+            on_service = on_service + "\n<b>" + doc["Present"]["user_group"] + " " + str(score_on_service) + ".</b>" + \
+                     doc["Present"]["user_lastname"] + " " + doc["Present"]["user_name"] + " " + doc["Present"][
+                         "user_middlename"] + "<br>"
+            continue
+        if doc["Present"]['user_status'] == "В лазарете":
+            score_lazaret = score_lazaret + 1
+            lazaret = lazaret + "\n<b>" + doc["Present"]["user_group"] + " " + str(score_lazaret) + ".</b>" + \
+                     doc["Present"]["user_lastname"] + " " + doc["Present"]["user_name"] + " " + doc["Present"][
+                         "user_middlename"] + "<br>"
+            continue
+        if doc["Present"]['user_status'] == "В казарме":
+            score_kazarma = score_kazarma + 1
+            kazarma = kazarma + "\n<b>" + doc["Present"]["user_group"] + " " + str(score_kazarma) + ".</b>" + \
+                     doc["Present"]["user_lastname"] + " " + doc["Present"]["user_name"] + " " + doc["Present"][
+                         "user_middlename"] + "<br>"
             continue
         number = "number " + time_of_day
         i_min = 0
@@ -281,7 +305,7 @@ async def find_report(collection, user_id, callback,kb):
                      doc["Present"]["user_name"] + " " + doc["Present"]["user_middlename"] + "<br>" + "\n<b>Номер телефона для связи: </b>" + doc["Present"]["user_phone"] + "<br> <b>Больше данных нет на военнослужащего.</b><br>\n<span style='background-color:#FF0000'>"
 
     f = open("Report/" + day + " " + time_of_day + " " + nachalnik['Present']['user_lastname'] + ".html", 'w')
-    f.write(all_ok + "\n" + not_ok)
+    f.write(all_ok + "\n" + not_ok + "\n</span>" + kazarma + "\n" + on_service + "\n" + lazaret)
     f.close()
     f = FSInputFile("Report/" + day + " " + time_of_day + " " + nachalnik['Present']['user_lastname'] + ".html")
     await callback.message.answer_document(f)
