@@ -1,10 +1,11 @@
-import datetime, folium, zipfile
+import datetime, folium, zipfile, moviepy, shutil, codecs
 
 from aiogram.types import FSInputFile
 
 from settings import YANDEX_TOKEN
 from yandex_geocoder import Client
 from geopy.distance import geodesic
+from moviepy import VideoFileClip, concatenate_videoclips
 
 async def search_or_save_user(collection, effective_user, message):
     user = await collection.find_one({"user_id": effective_user.id})
@@ -324,6 +325,8 @@ async def create_map(collection, user_id, callback, kb):
     fakultet = nachalnik['Present']['fakultet']
     user_group = nachalnik['Present']['user_group']
     user_unit = nachalnik['Present']['user_unit']
+    text_for_yandex = ""
+    yandex_count = 1
     if user_unit == "Начальник курса" or user_unit == "Курсовой офицер" or user_unit == "Старшина курса":
         cur = collection.find({
             "Present.year_nabor": year_nabor,
@@ -385,10 +388,12 @@ async def create_map(collection, user_id, callback, kb):
                 user_name = doc["Present"]["user_lastname"] + " " + doc["Present"]["user_name"] + " " + doc["Present"]["user_middlename"] + " <p>+" + doc["Present"]["user_phone"] + Family
                 P_latitude = float(doc["Facts"][day][number]["latitude"])
                 P_longitude = float(doc["Facts"][day][number]["longitude"])
-                popuptext = user_name
+                popuptext = user_name.replace('\n', ' ')
                 iframe = folium.Html(popuptext, script=True)
                 popup = folium.Popup(iframe, max_width=300, min_width=300)
+                text_for_yandex = text_for_yandex + "\nvar myPlacemark" + str(yandex_count) + " = new ymaps.Placemark([" + str(P_latitude) + "," +  str(P_longitude) + '],{\n' + "hintContent: '"  + popuptext + "' ,\n" + "balloonContentHeader: '"  + popuptext + "',\n" + "},{\n" + "preset: 'islands#grayDotIcon'\n" + "});\n" + "myMap.geoObjects.add(myPlacemark" + str(yandex_count) + ");\n"
                 folium.Marker(location=[P_latitude, P_longitude], popup= popup, icon=folium.Icon(color = 'gray')).add_to(map)
+                print(str(yandex_count) + "increment")
                 H_latitude_min = 59.825976
                 H_longitude_min = 30.380312
                 distance = 10000000000000
@@ -396,7 +401,6 @@ async def create_map(collection, user_id, callback, kb):
                     count = doc["Present"]["address"]["count"]
                     i = 0
                     while i <= count:
-                        print(float(doc["Present"]["address"][str(i)]["latitude"]))
                         H_latitude = float(doc["Present"]["address"][str(i)]["latitude"])
                         H_longitude = float(doc["Present"]["address"][str(i)]["longitude"])
                         home = (H_latitude, H_longitude)
@@ -410,15 +414,20 @@ async def create_map(collection, user_id, callback, kb):
                     user_name = doc["Present"]["user_lastname"] + " " + doc["Present"]["user_name"] + " " + \
                                 doc["Present"]["user_middlename"] + " <p>+" + doc["Present"]["user_phone"] + " <p>" + \
                                 doc["Present"]["address"][str(i_min)]["address"]
-                    popuptext = user_name
+                    popuptext = user_name.replace('\n', ' ')
                     iframe = folium.Html(popuptext, script=True)
                     popup = folium.Popup(iframe, max_width=300, min_width=300)
                     folium.Marker(location=[H_latitude_min, H_longitude_min], popup=popup, icon=folium.Icon(color='blue', icon='home')).add_to(map)
+                    text_for_yandex = text_for_yandex + "\nvar myPlacemark" + str(yandex_count) + " = new ymaps.Placemark([" + str(H_latitude_min) + "," + str(H_longitude_min) + '],{\n' + "hintContent: '" + popuptext + "' ,\n" + "balloonContentHeader: '" + popuptext + "',\n" + "},{\n" + "preset: 'islands#blueDotIcon'\n" + "});\n" + "myMap.geoObjects.add(myPlacemark" + str(yandex_count) + ");\n"
+                    print(str(yandex_count) + "hunger")
                 except Exception as ex:
-                    print("В базе данных адреса отсутствуют" + ex)
+                    print(str(yandex_count) + "geely")
+                print("\nlet myPolyline" + str(yandex_count) + " = new ymaps.Polyline([\n[" + str(P_latitude) + "," + str(P_longitude) + '],\n[' + str(H_latitude_min) + "," + str(H_longitude_min) + ']\n]);\n' + "myMap.geoObjects.add(myPolyline" + str(yandex_count) + ");\n")
+                text_for_yandex = text_for_yandex + "\nlet myPolyline" + str(yandex_count) + " = new ymaps.Polyline([\n[" + str(P_latitude) + "," + str(P_longitude) + '],\n[' + str(H_latitude_min) + "," + str(H_longitude_min) + ']\n]);\n' + "myMap.geoObjects.add(myPolyline" + str(yandex_count) + ");\n"
+                print(text_for_yandex)
                 folium.PolyLine(locations=[(P_latitude, P_longitude), (H_latitude_min, H_longitude_min)], line_opacity=0.5).add_to(map)
+
             except Exception as ex:
-                print(ex)
                 try:
                     Family = "<p><b>Мать: </b>" + doc["SOS"]["user_lastname_mother"] + " " + doc["SOS"][
                         "user_name_mother"] + " " + \
@@ -444,15 +453,16 @@ async def create_map(collection, user_id, callback, kb):
                         H_latitude = float(doc["Present"]["address"][str(i)]["latitude"])
                         H_longitude = float(doc["Present"]["address"][str(i)]["longitude"])
                         user_name = doc["Present"]["user_lastname"] + " " + doc["Present"]["user_name"] + " " + doc["Present"]["user_middlename"] + " <p>+" + doc["Present"]["user_phone"] + " <p>" + doc["Present"]["address"][str(i)]["address"]
-                        popuptext = user_name
+                        popuptext = user_name.replace('\n', ' ')
                         iframe = folium.Html(popuptext, script=True)
                         popup = folium.Popup(iframe, max_width=300, min_width=300)
                         folium.Marker(location=[H_latitude, H_longitude], popup=popup, icon=folium.Icon(color='red', icon='home')).add_to(map)
+                        text_for_yandex = text_for_yandex + "\nvar myPlacemark" + str(yandex_count) + " = new ymaps.Placemark([" + str(H_latitude) + "," + str(H_longitude) + '],{\n' + "hintContent: '" + popuptext + "' ,\n" + "balloonContentHeader: '" + popuptext + "',\n" + "},{\n" + "preset: 'islands#redDotIcon'\n" + "});\n" + "myMap.geoObjects.add(myPlacemark" + str(yandex_count) + ");\n"
+                        print(str(yandex_count)+ "fight")
                         i = i + 1
                 except Exception as ex:
-                    print("В базе данных адреса отсутствуют")
+                    print(str(yandex_count) + "eagle")
         except Exception as ex:
-            print(ex)
             try:
                 try:
                     Family = "<p><b>Мать: </b>" + doc["SOS"]["user_lastname_mother"] + " " + doc["SOS"][
@@ -471,7 +481,6 @@ async def create_map(collection, user_id, callback, kb):
                              + "<p><b>Телефон друга: </b>" + doc["SOS"]["user_phone_other"] \
                              + "<p><b>Адрес друга: </b>" + doc["SOS"]["user_address_other"]
                 except Exception as ex:
-                    print(ex)
                     Family = "<p>Данных о семье нет"
                 try:
                     count = doc["Present"]["address"]["count"]
@@ -480,15 +489,18 @@ async def create_map(collection, user_id, callback, kb):
                         H_latitude = float(doc["Present"]["address"][str(i)]["latitude"])
                         H_longitude = float(doc["Present"]["address"][str(i)]["longitude"])
                         user_name = doc["Present"]["user_lastname"] + " " + doc["Present"]["user_name"] + " " + doc["Present"]["user_middlename"] + " <p>+" + doc["Present"]["user_phone"] + " <p>" + doc["Present"]["address"][str(i)]["address"]
-                        popuptext = user_name
+                        popuptext = user_name.replace('\n', ' ')
                         iframe = folium.Html(popuptext, script=True)
                         popup = folium.Popup(iframe, max_width=300, min_width=300)
                         folium.Marker(location=[H_latitude, H_longitude], popup=popup, icon=folium.Icon(color='red', icon='home')).add_to(map)
+                        text_for_yandex = text_for_yandex + "\nvar myPlacemark" + str(yandex_count) + " = new ymaps.Placemark([" + str(H_latitude) + "," + str(H_longitude) + '],{\n' + "hintContent: '" + popuptext + "' ,\n" + "balloonContentHeader: '" + popuptext + "',\n" + "},{\n" + "preset: 'islands#redDotIcon'\n" + "});\n" + "myMap.geoObjects.add(myPlacemark" + str(yandex_count) + ");\n"
+                        print(str(yandex_count) + "danger")
                         i = i + 1
                 except Exception as ex:
-                    print("В базе данных адреса отсутствуют")
+                    print(str(yandex_count) + "cadet")
             except Exception as ex:
-                print(ex)
+                print(str(yandex_count) + "baryl")
+        yandex_count = yandex_count + 1
     if 0 <= time.hour <= 12:
         time_of_day = "утро"
     else:
@@ -496,8 +508,25 @@ async def create_map(collection, user_id, callback, kb):
     day = time.strftime("%d.%m.%Y")
     title = "Карты/Обстановка на " + time_of_day + " " + day + " " + hour + ".html"
     map.save(title)
-    f = FSInputFile("Карты/Обстановка на " + time_of_day + " " + day + " " + hour + ".html")
-    await callback.message.answer_document(f)
+    #f = FSInputFile("Карты/Обстановка на " + time_of_day + " " + day + " " + hour + ".html")
+    #await callback.message.answer_document(f)
+    source = 'yandex_map.html'
+    destination = 'Карты/Яндекс обстановка на ' + day + " " + time_of_day + " " + nachalnik['Present']['user_lastname'] + ".html"
+    try:
+        shutil.copy2(source, destination)
+    except Exception as ex:
+        print(str(yandex_count) + "angel")
+    # yandex_map = open('Report/Яндекс обстановка на ' + day + " " + time_of_day + " " + nachalnik['Present']['user_lastname'] + ".html", 'w')
+    # yandex_map.close()
+    file_yandex_name = 'Карты/Яндекс обстановка на ' + day + " " + time_of_day + " " + nachalnik['Present']['user_lastname'] + ".html"
+    yandex_map = FSInputFile(file_yandex_name)
+    with open(file_yandex_name, "r") as f:
+        contents = f.readlines()
+    contents.insert(14, text_for_yandex)
+    with codecs.open(file_yandex_name, "w", "utf-8") as f:
+        contents = "".join(contents)
+        f.write(contents)
+    await callback.message.answer_document(yandex_map)
     await callback.message.answer("Полный доклад в файле выше.\n", reply_markup=kb.back_keyboard)
 
 
@@ -550,19 +579,28 @@ async def get_video_note(collection, user_id, callback,kb):
     time_facts = time_old.strftime("%d-%m-%Y")
     cur = cur.sort("Present.user_group", 1)
     zip_file_name = 'Report/Видеозаметки на ' + time + " " + time_of_day + " " + nachalnik['Present']['user_lastname'] + '.zip'
+    video_file_name = 'Report/Видеозаметки на ' + time + " " + time_of_day + " " + nachalnik['Present']['user_lastname'] + '.mp4'
     file_names = []
     async for doc in cur:
         if doc["Present"]['user_unit'] == "Начальник курса" or doc["Present"]['user_unit'] == "Курсовой офицер":
             continue
         try:
             name = "Report/" + doc["Present"]['user_group'] + "/" + time + " " + time_of_day + "/" + doc["Present"]['user_lastname'] + " " + doc["Facts"][time_facts][time_of_day_facts]["uid"] + ".mp4"
+            video = FSInputFile(name)
+            await callback.message.answer_video(video)
             file_names.append(name)
         except Exception as ex:
             print(ex)
     zip_object = zipfile.ZipFile(zip_file_name, 'w')
+    #try:
+    #    video_clips = [VideoFileClip(video_path) for video_path in file_names]
+    #    final_clip = concatenate_videoclips(video_clips)
+   #     final_clip.write_videofile(video_file_name)
+    #except Exception as ex:
+    #    print(ex)
     for file_name in file_names:
         zip_object.write(file_name, compress_type=zipfile.ZIP_DEFLATED)
     zip_object.close()
-    f = FSInputFile(zip_file_name)
-    await callback.message.answer_document(f)
-    await callback.message.answer("Видеоролики в файле выше.\n", reply_markup=kb.back_keyboard)
+    #f = FSInputFile(zip_file_name)
+    #await callback.message.answer_document(f)
+    #await callback.message.answer("Видеоролики в файле выше.\n", reply_markup=kb.back_keyboard)

@@ -1,4 +1,4 @@
-import uuid, zipfile
+import uuid, zipfile, asyncio, aioschedule
 from collections import defaultdict
 import os, datetime
 from aiogram import F, Router
@@ -7,7 +7,7 @@ from aiogram.filters.command import Command
 from aiogram.types import CallbackQuery
 from aiogram.fsm.state import State, StatesGroup
 from aiogram.fsm.context import FSMContext
-from settings import TG_TOKEN, MONGODB_LINK
+from settings import TG_TOKEN, MONGODB_LINK, PASSWORD_NKY, PASSWORD_KO, PASSWORD_KUG
 import keyboards as kb
 from functions import *
 
@@ -22,6 +22,9 @@ class Register(StatesGroup):
     fakultet = State()
     kafedra = State()
     position = State()
+    password_nky = State()
+    password_kug = State()
+    password_ko = State()
     podgruppa = State()
     last_name = State()
     name = State()
@@ -142,8 +145,46 @@ async def register_kafedra(message: types.Message, state: FSMContext):
 @router.message(Register.position)
 async def register_position(message: types.Message, state: FSMContext):
     await state.update_data(position=message.text)
-    await state.set_state(Register.last_name)
-    await message.answer('Введите свою фамилию', reply_markup=types.ReplyKeyboardRemove())
+    if message.text == "Начальник курса" or message.text == "Курсовой офицер" or message.text == "Старшина курса":
+        await state.set_state(Register.password_nky)
+        await message.answer('Для продолжения введите пароль!', reply_markup=types.ReplyKeyboardRemove())
+    if message.text == "Командир учебной группы":
+        await state.set_state(Register.password_kug)
+        await message.answer('Для продолжения введите пароль!', reply_markup=types.ReplyKeyboardRemove())
+    if message.text == "Командир 3 отд-я" or message.text == "Командир 3 отд-я" or message.text == "Командир 3 отд-я":
+        await state.set_state(Register.password_ko)
+        await message.answer('Для продолжения введите пароль!', reply_markup=types.ReplyKeyboardRemove())
+    if message.text == "Курсант 3 отд-я" or message.text == "Курсант 3 отд-я" or message.text == "Курсант 3 отд-я":
+        await state.set_state(Register.last_name)
+        await message.answer('Введите свою фамилию', reply_markup=types.ReplyKeyboardRemove())
+
+@router.message(Register.password_nky)
+async def register_password_nky(message: types.Message, state: FSMContext):
+    await state.update_data(password=message.text)
+    if message.text == PASSWORD_NKY:
+        await state.set_state(Register.last_name)
+        await message.answer('Введите свою фамилию', reply_markup=types.ReplyKeyboardRemove())
+    else:
+        await message.answer('Пароль введён неверно!', reply_markup=kb.back_keyboard)
+
+@router.message(Register.password_kug)
+async def register_password_kug(message: types.Message, state: FSMContext):
+    await state.update_data(password=message.text)
+    if message.text == PASSWORD_KUG:
+        await state.set_state(Register.last_name)
+        await message.answer('Введите свою фамилию', reply_markup=types.ReplyKeyboardRemove())
+    else:
+        await message.answer('Пароль введён неверно!', reply_markup=kb.back_keyboard)
+
+@router.message(Register.password_ko)
+async def register_password_ko(message: types.Message, state: FSMContext):
+    await state.update_data(password=message.text)
+    if message.text == PASSWORD_KO:
+        await state.set_state(Register.last_name)
+        await message.answer('Введите свою фамилию', reply_markup=types.ReplyKeyboardRemove())
+    else:
+        await message.answer('Пароль введён неверно!', reply_markup=kb.back_keyboard)
+
 @router.message(Register.last_name)
 async def register_last_name(message: types.Message, state: FSMContext):
     await state.update_data(last_name=message.text)
@@ -267,8 +308,8 @@ async def reset_address_key(callback: CallbackQuery, state: FSMContext):
 
 @router.callback_query(F.data == 'prinyt_doklad')
 async def prinyt_doklad(callback: CallbackQuery, state: FSMContext, bot: Bot):
-    await find_report(collection, callback.from_user.id, callback, kb)
     await get_video_note(collection, callback.from_user.id, callback, kb)
+    await find_report(collection, callback.from_user.id, callback, kb)
 
 @router.callback_query(F.data == 'create_map_knopka')
 async def create_map_knopka(callback: CallbackQuery, state: FSMContext, bot: Bot):
@@ -284,3 +325,16 @@ async def put_address_me(callback: CallbackQuery, state: FSMContext):
 async def get_address_me(message: types.Message, state: FSMContext):
     await put_address_from_coords(collection, message.from_user.id, message.text)
     await message.answer('Адрес отправлен в базу данных!', reply_markup=kb.back_keyboard)
+
+#@router.message()
+#async def choose_your_dinner():
+#    await Bot.send_message(chat_id=479947781, text="Хей🖖")
+
+#async def scheduler():
+#    aioschedule.every().day.at("15:47").do(choose_your_dinner)
+#    while True:
+#        await aioschedule.run_pending()
+#        await asyncio.sleep(1)
+
+#async def on_startup(dp):
+#    asyncio.create_task(scheduler())

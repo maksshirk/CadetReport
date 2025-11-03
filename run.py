@@ -1,4 +1,4 @@
-import asyncio, settings, datetime, pymongo
+import asyncio, settings, datetime, pymongo, aioschedule
 from datetime import datetime
 import logging
 from aiogram import Bot, Dispatcher, types
@@ -20,6 +20,7 @@ async def main():
     dp = Dispatcher()
     dp.include_router(router)
     await dp.start_polling(bot)
+
 
 if __name__ == "__main__":
     try:
