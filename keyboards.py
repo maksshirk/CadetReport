@@ -88,6 +88,7 @@ nachalnik_keyboard = InlineKeyboardMarkup(inline_keyboard=[
     [InlineKeyboardButton(text='Добавить адрес проживания (место проведения отпуска)', callback_data='put_address_me')],
     [InlineKeyboardButton(text='Изменить статус (В наряде, в казарме, в госпитале и т.д.)', callback_data='status_change')],
     [InlineKeyboardButton(text='Получить лог-файл (проверить действия с ботом, помогает в сложных ситуациях)', callback_data='get_log')],
+    [InlineKeyboardButton(text='Вывести список всех, кто зарегистрирован в БД', callback_data='get_all')],
     #[InlineKeyboardButton(text='У меня обновились сведения по месту проживания', callback_data='reset_address_key')],
     [InlineKeyboardButton(text='Заново пройти регистрацию', callback_data='registration')],
     #[InlineKeyboardButton(text='О разработке бота', callback_data='about')]
