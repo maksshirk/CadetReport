@@ -155,10 +155,10 @@ async def register_position(message: types.Message, state: FSMContext):
     if message.text == "Командир учебной группы":
         await state.set_state(Register.password_kug)
         await message.answer('Для продолжения введите пароль!', reply_markup=types.ReplyKeyboardRemove())
-    if message.text == "Командир 3 отд-я" or message.text == "Командир 3 отд-я" or message.text == "Командир 3 отд-я":
+    if message.text == "Командир 1 отд-я" or message.text == "Командир 2 отд-я" or message.text == "Командир 3 отд-я":
         await state.set_state(Register.password_ko)
         await message.answer('Для продолжения введите пароль!', reply_markup=types.ReplyKeyboardRemove())
-    if message.text == "Курсант 3 отд-я" or message.text == "Курсант 3 отд-я" or message.text == "Курсант 3 отд-я":
+    if message.text == "Курсант 1 отд-я" or message.text == "Курсант 2 отд-я" or message.text == "Курсант 3 отд-я":
         await state.set_state(Register.last_name)
         await message.answer('Введите свою фамилию', reply_markup=types.ReplyKeyboardRemove())
 

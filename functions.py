@@ -233,6 +233,11 @@ async def find_report(collection, user_id, callback,kb):
     score_on_service = 0
     score_lazaret = 0
     score_kazarma = 0
+    score_otpusk = 0
+    score_hospital = 0
+    score_yvolnenie = 0
+    score_komandirovka = 0
+    score_vnekazarm = 0
     cur = cur.sort("Present.user_group", 1)
     async for doc in cur:
         if doc["Present"]['user_unit'] == "Начальник курса" or doc["Present"]['user_unit'] == "Курсовой офицер":
@@ -255,6 +260,16 @@ async def find_report(collection, user_id, callback,kb):
                      doc["Present"]["user_lastname"] + " " + doc["Present"]["user_name"] + " " + doc["Present"][
                          "user_middlename"] + "<br>"
             continue
+        if doc["Present"]['user_status'] == "В отпуске":
+            score_otpusk = score_otpusk + 1
+        if doc["Present"]['user_status'] == "В госпитале":
+            score_hospital = score_hospital + 1
+        if doc["Present"]['user_status'] == "В увольнении":
+            score_yvolnenie = score_yvolnenie + 1
+        if doc["Present"]['user_status'] == "В командировке":
+            score_komandirovka = score_komandirovka + 1
+        if doc["Present"]['user_status'] == "Вне общежития":
+            score_vnekazarm = score_vnekazarm + 1
         number = "number " + time_of_day
         i_min = 0
         try:
@@ -305,7 +320,13 @@ async def find_report(collection, user_id, callback,kb):
                      doc["Present"]["user_name"] + " " + doc["Present"]["user_middlename"] + "<br>" + "\n<b>Номер телефона для связи: </b>" + doc["Present"]["user_phone"] + "<br> <b>Больше данных нет на военнослужащего.</b><br>\n<span style='background-color:#FF0000'>"
 
     f = open("Report/" + day + " " + time_of_day + " " + nachalnik['Present']['user_lastname'] + ".html", 'w')
-    f.write(all_ok + "\n" + not_ok + "\n</span>" + kazarma + "\n" + on_service + "\n" + lazaret)
+    itog = "<b>В системе зарегистрировано: </b>" + str(score_otpusk) + str(score_komandirovka) + str(score_kazarma) + str(score_lazaret) + str(score_hospital) + str(score_yvolnenie) + str(score_on_service) + str(score_vnekazarm) + "<br>" + \
+           "<b>Доклад поступил (включая отпуск, командировку, увольнение, госпиталь): </b>" +  str(score_all_ok) + "<br>" + \
+           "<b>Доклад не поступил: </b>" + str(score_not_ok) + "<br>" + \
+            "<b>В казарме: </b>" + str(score_kazarma) + "<br>" + \
+            "<b>В лазарете: </b>" + str(score_lazaret) + "<br>" + \
+            "<b>В наряде: </b>" + str(score_on_service) + "<br>"
+    f.write(itog + all_ok + "\n" + not_ok + "\n</span>" + kazarma + "\n" + on_service + "\n" + lazaret)
     f.close()
     f = FSInputFile("Report/" + day + " " + time_of_day + " " + nachalnik['Present']['user_lastname'] + ".html")
     await callback.message.answer_document(f)

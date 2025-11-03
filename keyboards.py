@@ -66,7 +66,7 @@ kursant_keyboard = InlineKeyboardMarkup(inline_keyboard=[
     [InlineKeyboardButton(text='Изменить статус (В наряде, в казарме, в госпитале и т.д.)', callback_data='status_change')],
     #[InlineKeyboardButton(text='У меня обновились сведения по месту проживания', callback_data='reset_address_key')],
     [InlineKeyboardButton(text='Заново пройти регистрацию', callback_data='registration')],
-    [InlineKeyboardButton(text='О разработке бота', callback_data='about')]
+    #[InlineKeyboardButton(text='О разработке бота', callback_data='about')]
 ], resize_keyboard= True)
 
 komandir_keyboard = InlineKeyboardMarkup(inline_keyboard=[
@@ -76,7 +76,7 @@ komandir_keyboard = InlineKeyboardMarkup(inline_keyboard=[
     [InlineKeyboardButton(text='Изменить статус (В наряде, в казарме, в госпитале и т.д.)', callback_data='status_change')],
     #[InlineKeyboardButton(text='У меня обновились сведения по месту проживания', callback_data='reset_address_key')],
     [InlineKeyboardButton(text='Заново пройти регистрацию', callback_data='registration')],
-    [InlineKeyboardButton(text='О разработке бота', callback_data='about')]
+    #[InlineKeyboardButton(text='О разработке бота', callback_data='about')]
 ], resize_keyboard= True)
 
 nachalnik_keyboard = InlineKeyboardMarkup(inline_keyboard=[
@@ -88,7 +88,7 @@ nachalnik_keyboard = InlineKeyboardMarkup(inline_keyboard=[
     [InlineKeyboardButton(text='Изменить статус (В наряде, в казарме, в госпитале и т.д.)', callback_data='status_change')],
     #[InlineKeyboardButton(text='У меня обновились сведения по месту проживания', callback_data='reset_address_key')],
     [InlineKeyboardButton(text='Заново пройти регистрацию', callback_data='registration')],
-    [InlineKeyboardButton(text='О разработке бота', callback_data='about')]
+    #[InlineKeyboardButton(text='О разработке бота', callback_data='about')]
 ], resize_keyboard= True)
 
 geo_keyboard = ReplyKeyboardMarkup(keyboard=[
