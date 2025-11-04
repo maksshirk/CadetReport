@@ -10,12 +10,11 @@ from settings import TG_TOKEN, MONGODB_LINK
 
 # Включаем логирование, чтобы не пропустить важные сообщения
 logging.basicConfig(level=logging.INFO)
-
+bot = Bot(token=TG_TOKEN)
 # Запуск процесса поллинга новых апдейтов
 async def main():
-    global bot
     # Объект бота
-    bot = Bot(token=TG_TOKEN)
+
     # Диспетчер
     dp = Dispatcher()
     dp.include_router(router)
