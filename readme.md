@@ -10,7 +10,7 @@ pip install bs4\
 pip install haversine\
 pip install apscheduler\
 pip install moviepy\
-pip install aioschedule
+pip install APScheduler
 
 ## To-do лист: 
 Сделать статусы (готово)\

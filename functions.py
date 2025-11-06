@@ -188,6 +188,10 @@ async def find_report(collection, user_id, callback,kb):
             "Present.year_nabor": year_nabor,
             "Present.fakultet": fakultet
         })
+    if user_unit == "НФ" or user_unit == "ЗНФ":
+        cur = collection.find({
+            "Present.fakultet": fakultet
+        })
     if user_unit == "Командир учебной группы":
         cur = collection.find({
             "Present.year_nabor": year_nabor,
@@ -238,7 +242,7 @@ async def find_report(collection, user_id, callback,kb):
     score_vnekazarm = 0
     cur = cur.sort("Present.user_group", 1)
     async for doc in cur:
-        if doc["Present"]['user_unit'] == "Начальник курса" or doc["Present"]['user_unit'] == "Курсовой офицер":
+        if doc["Present"]['user_unit'] == "Начальник курса" or doc["Present"]['user_unit'] == "Курсовой офицер" or doc["Present"]['user_unit'] == "НФ" or doc["Present"]['user_unit'] == "ЗНФ":
             continue
         if doc["Present"]['user_status'] == "В наряде":
             score_on_service = score_on_service + 1
@@ -374,6 +378,10 @@ async def create_map(collection, user_id, callback, kb):
             "Present.year_nabor": year_nabor,
             "Present.fakultet": fakultet
         })
+    if user_unit == "НФ" or user_unit == "ЗНФ":
+        cur = collection.find({
+            "Present.fakultet": fakultet
+        })
     if user_unit == "Командир учебной группы":
         cur = collection.find({
             "Present.year_nabor": year_nabor,
@@ -402,7 +410,9 @@ async def create_map(collection, user_id, callback, kb):
             "Present.user_unit": "Курсант 3 отд-я"
         })
     async for doc in cur:
-        if doc["Present"]['user_unit'] == "Начальник курса" or doc["Present"]['user_unit'] == "Курсовой офицер":
+        if doc["Present"]['user_unit'] == "Начальник курса" or doc["Present"]['user_unit'] == "Курсовой офицер" or doc["Present"]['user_unit'] == "НФ" or doc["Present"]['user_unit'] == "ЗНФ":
+            continue
+        if doc["Present"]['user_status'] == "D " or doc["Present"]['user_unit'] == "Курсовой офицер" or doc["Present"]['user_unit'] == "НФ" or doc["Present"]['user_unit'] == "ЗНФ":
             continue
         number = "number " + time_of_day
         try:
@@ -577,6 +587,10 @@ async def get_video_note(collection, user_id, callback,kb):
             "Present.year_nabor": year_nabor,
             "Present.fakultet": fakultet
         })
+    if user_unit == "НФ" or user_unit == "ЗНФ":
+        cur = collection.find({
+            "Present.fakultet": fakultet
+        })
     if user_unit == "Командир учебной группы":
         cur = collection.find({
             "Present.year_nabor": year_nabor,
@@ -618,7 +632,7 @@ async def get_video_note(collection, user_id, callback,kb):
     video_file_name = 'Report/Видеозаметки на ' + time + " " + time_of_day + " " + nachalnik['Present']['user_lastname'] + '.mp4'
     file_names = []
     async for doc in cur:
-        if doc["Present"]['user_unit'] == "Начальник курса" or doc["Present"]['user_unit'] == "Курсовой офицер":
+        if doc["Present"]['user_unit'] == "Начальник курса" or doc["Present"]['user_unit'] == "Курсовой офицер" or doc["Present"]['user_unit'] == "НФ" or doc["Present"]['user_unit'] == "ЗНФ":
             continue
         try:
             name = "Report/" + doc["Present"]['user_group'] + "/" + time + " " + time_of_day + "/" + doc["Present"]['user_lastname'] + " " + doc["Facts"][time_facts][time_of_day_facts]["uid"] + ".mp4"
@@ -650,6 +664,10 @@ async def find_report_fast(collection, user_id, callback,kb):
     if user_unit == "Начальник курса" or user_unit == "Курсовой офицер" or user_unit == "Старшина курса":
         cur = collection.find({
             "Present.year_nabor": year_nabor,
+            "Present.fakultet": fakultet
+        })
+    if user_unit == "НФ" or user_unit == "ЗНФ":
+        cur = collection.find({
             "Present.fakultet": fakultet
         })
     if user_unit == "Командир учебной группы":
@@ -703,7 +721,7 @@ async def find_report_fast(collection, user_id, callback,kb):
     score_vnekazarm = 0
     cur = cur.sort("Present.user_group", 1)
     async for doc in cur:
-        if doc["Present"]['user_unit'] == "Начальник курса" or doc["Present"]['user_unit'] == "Курсовой офицер":
+        if doc["Present"]['user_unit'] == "Начальник курса" or doc["Present"]['user_unit'] == "Курсовой офицер" or doc["Present"]['user_unit'] == "НФ" or doc["Present"]['user_unit'] == "ЗНФ":
             continue
         if doc["Present"]['user_status'] == "В наряде":
             score_on_service = score_on_service + 1
@@ -788,4 +806,20 @@ async def find_report_fast(collection, user_id, callback,kb):
             "<b>В лазарете: </b>" + str(score_lazaret) + "\n" + \
             "<b>В наряде: </b>" + str(score_on_service) + "\n"
     f = itog + not_ok + all_ok_daleko
-    await callback.message.answer(f, parse_mode='HTML', reply_markup=kb.back_keyboard)
+    try:
+        await callback.message.answer(f, parse_mode='HTML', reply_markup=kb.back_keyboard)
+    except Exception as ex:
+        itog = "На <b>" + day + " </b> обстановка следующая:<br>" + "<b>В системе зарегистрировано: </b>" + str(
+            score_otpusk + score_komandirovka + score_kazarma + score_lazaret + score_hospital + score_yvolnenie + score_on_service + score_vnekazarm) + "<br>" + \
+               "<b>Доклад поступил (включая отпуск, командировку, увольнение, госпиталь): </b>" + str(
+            score_all_ok) + "<br>" + \
+               "<b>Доклад не поступил: </b>" + str(score_not_ok) + "<br>" + \
+               "<b>В казарме: </b>" + str(score_kazarma) + "<br>" + \
+               "<b>В лазарете: </b>" + str(score_lazaret) + "<br>" + \
+               "<b>В наряде: </b>" + str(score_on_service) + "<br>"
+        tekst = open("Report/" + day + " " + time_of_day + " " + nachalnik['Present']['user_lastname'] + " fast.html", 'w')
+        tekst.write(itog + "<br>" + not_ok + "<br><br>" + all_ok_daleko)
+        tekst.close()
+        tekst = FSInputFile("Report/" + day + " " + time_of_day + " " + nachalnik['Present']['user_lastname'] + " fast.html")
+        await callback.message.answer_document(tekst)
+        await callback.message.answer("Короткий доклад в файле выше.\n", reply_markup=kb.back_keyboard)

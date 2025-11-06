@@ -197,3 +197,7 @@ get_help_knigi_keyboard = ReplyKeyboardMarkup(keyboard=[
     ],
     resize_keyboard=True,
     input_field_placeholder='Выберите литературу для скачивания!')
+
+go_report_keyboard = InlineKeyboardMarkup(inline_keyboard=[
+    [InlineKeyboardButton(text='Доклад о состоянии дел', callback_data='doklad')]
+], resize_keyboard= True)
