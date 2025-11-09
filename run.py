@@ -4,6 +4,7 @@ from handlers import router
 from initializator import bot, scheduler
 from aiogram import Dispatcher
 from scheduler_jobs import go_report, go_report_komandir
+from time import gmtime, strftime
 
 # Включаем логирование, чтобы не пропустить важные сообщения
 logging.basicConfig(level=logging.INFO)
@@ -25,4 +26,4 @@ if __name__ == "__main__":
     try:
         asyncio.run(main())
     except KeyboardInterrupt:
-        print("Бот выключен.")
+        print(strftime("%Y-%m-%d %H:%M:%S", gmtime()) + "Бот выключен.")

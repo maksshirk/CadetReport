@@ -1,7 +1,6 @@
-import datetime, folium, zipfile, moviepy, shutil, codecs
-
+import datetime, folium, zipfile, shutil, codecs
 from aiogram.types import FSInputFile
-
+from time import gmtime, strftime
 from settings import YANDEX_TOKEN
 from yandex_geocoder import Client
 from geopy.distance import geodesic
@@ -152,7 +151,7 @@ async def put_address_from_coords(collection, user_id, address):
 
                                     }})
     except Exception as e:
-        print("Ошибка в блоке отправки адреса базу данных: " + str(e))
+        print(strftime("%Y-%m-%d %H:%M:%S", gmtime()) + "Ошибка в блоке отправки адреса базу данных: " + str(e))
 
 async def save_kursant_address(collection, user_id):
     try:
@@ -162,7 +161,7 @@ async def save_kursant_address(collection, user_id):
                                             }
                                     })
     except Exception as e:
-        print("Ошибка в блоке изменения статуса адреса курсанта: " + str(e))
+        print(strftime("%Y-%m-%d %H:%M:%S", gmtime()) + "Ошибка в блоке изменения статуса адреса курсанта: " + str(e))
 
 async def reset_address(collection, user_id):
     try:
@@ -171,7 +170,7 @@ async def reset_address(collection, user_id):
                                         "Present.count": 0
                                     }})
     except Exception as e:
-        print("Ошибка в блоке обнуления адреса курсанта: " + str(e))
+        print(strftime("%Y-%m-%d %H:%M:%S", gmtime()) + "Ошибка в блоке обнуления адреса курсанта: " + str(e))
 
 
 
@@ -646,7 +645,7 @@ async def get_video_note(collection, user_id, callback,kb):
     #    final_clip = concatenate_videoclips(video_clips)
    #     final_clip.write_videofile(video_file_name)
     #except Exception as ex:
-    #    print(ex)
+    #    print(strftime("%Y-%m-%d %H:%M:%S", gmtime()) + ex)
     for file_name in file_names:
         zip_object.write(file_name, compress_type=zipfile.ZIP_DEFLATED)
     zip_object.close()

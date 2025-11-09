@@ -9,6 +9,7 @@ from aiogram.fsm.context import FSMContext
 from settings import MONGODB_LINK, PASSWORD_NKY, PASSWORD_KO, PASSWORD_KUG
 import keyboards as kb
 from functions import *
+from time import gmtime, strftime
 
 
 logging.basicConfig(level=logging.INFO, filename="py_log.log",filemode="a",
@@ -79,7 +80,7 @@ async def cmd_start(message: types.Message, state: FSMContext, bot: Bot):
     try:
         info = await info_account(collection, message.from_user.id)
     except Exception as e:
-        print("Ошибка в блоке старта: " + str(e))
+        print(strftime("%Y-%m-%d %H:%M:%S", gmtime()) + "Ошибка в блоке старта: " + str(e))
     check_user = await check_point(collection, message.from_user)
     user_status = await bot.get_chat_member(chat_id='-1001371757648', user_id=message.from_user.id)
     if user_status.status != 'left':
@@ -111,7 +112,7 @@ async def menu(callback: CallbackQuery, state: FSMContext, bot: Bot):
     try:
         info = await info_account(collection, callback.from_user.id)
     except Exception as e:
-        print("Ошибка в блоке перехода в меню: " + str(e))
+        print(strftime("%Y-%m-%d %H:%M:%S", gmtime()) + "Ошибка в блоке перехода в меню: " + str(e))
     check_user = await check_point_menu(collection, callback.from_user.id)
     user_status = await bot.get_chat_member(chat_id='-1001371757648', user_id=callback.from_user.id)
     if user_status.status != 'left':
@@ -225,7 +226,7 @@ async def register_password_nky(message: types.Message, state: FSMContext):
     else:
         try:
             logging.warning("Пользователь с ID: " + str(message.from_user.id) + " " + str(message.from_user.last_name) + " " + str(message.from_user.first_name) + " " + str(message.from_user.username) + " ввел неправильный пароль: " + message.text)
-            print("Пользователь с ID: " + str(message.from_user.id) + " " + str(message.from_user.last_name) + " " + str(message.from_user.first_name) + " " + str(message.from_user.username) + " ввел неправильный пароль: " + message.text)
+            print(strftime("%Y-%m-%d %H:%M:%S", gmtime()) + "Пользователь с ID: " + str(message.from_user.id) + " " + str(message.from_user.last_name) + " " + str(message.from_user.first_name) + " " + str(message.from_user.username) + " ввел неправильный пароль: " + message.text)
         except Exception as ex:
             logging.warning("Ошибка логирования в поле для ввода пароля: " + str(ex))
         await message.answer('Пароль введён неверно!', reply_markup=kb.back_keyboard)
@@ -243,7 +244,7 @@ async def register_password_kug(message: types.Message, state: FSMContext):
     else:
         try:
             logging.warning("Пользователь с ID: " + str(message.from_user.id) + " " + str(message.from_user.last_name) + " " + str(message.from_user.first_name) + " " + str(message.from_user.username) + " ввел неправильный пароль: " + message.text)
-            print("Пользователь с ID: " + str(message.from_user.id) + " " + str(message.from_user.last_name) + " " + str(message.from_user.first_name) + " " + str(message.from_user.username) + " ввел неправильный пароль: " + message.text)
+            print(strftime("%Y-%m-%d %H:%M:%S", gmtime()) + "Пользователь с ID: " + str(message.from_user.id) + " " + str(message.from_user.last_name) + " " + str(message.from_user.first_name) + " " + str(message.from_user.username) + " ввел неправильный пароль: " + message.text)
         except Exception as ex:
             logging.warning("Ошибка логирования в поле для ввода пароля: " + str(ex))
         await message.answer('Пароль введён неверно!', reply_markup=kb.back_keyboard)
@@ -261,7 +262,7 @@ async def register_password_ko(message: types.Message, state: FSMContext):
     else:
         try:
             logging.warning("Пользователь с ID: " + str(message.from_user.id) + " " + str(message.from_user.last_name) + " " + str(message.from_user.first_name) + " " + str(message.from_user.username) + " ввел неправильный пароль: " + message.text)
-            print("Пользователь с ID: " + str(message.from_user.id) + " " + str(message.from_user.last_name) + " " + str(message.from_user.first_name) + " " + str(message.from_user.username) + " ввел неправильный пароль: " + message.text)
+            print(strftime("%Y-%m-%d %H:%M:%S", gmtime()) + "Пользователь с ID: " + str(message.from_user.id) + " " + str(message.from_user.last_name) + " " + str(message.from_user.first_name) + " " + str(message.from_user.username) + " ввел неправильный пароль: " + message.text)
         except Exception as ex:
             logging.warning("Ошибка логирования в поле для ввода пароля: " + str(ex))
         await message.answer('Пароль введён неверно!', reply_markup=kb.back_keyboard)
@@ -774,7 +775,7 @@ async def dovedenie_end(message: types.Message, state: FSMContext, bot: Bot):
                                     })
         await message.answer("От: " + komandir["Present"]["user_lastname"] + " " + komandir["Present"]["user_name"] + " " + komandir["Present"]["user_middlename"] + '\nпринята следующая информация:\n<b>' + tekst["info_message"] + '</b>\nВернитесь в меню!', reply_markup=kb.back_keyboard, parse_mode='HTML')
     except Exception as ex:
-        print("Ошибка при принятии информации: " + str(ex))
+        print(strftime("%Y-%m-%d %H:%M:%S", gmtime()) + "Ошибка при принятии информации: " + str(ex))
         await message.answer('Ошибка, сообщите @maksshirk и вернитесь в меню!', reply_markup=kb.back_keyboard)
 
 @router.callback_query(F.data == "check_dovedenie")
@@ -790,7 +791,7 @@ async def check_dovedenie(callback: CallbackQuery, state: FSMContext, bot: Bot):
                 text = "Информация от: <b>" + doc["time"] + "</b>\n" + doc["info_message"] + "\n Уникальный код: <b><code>" + doc["info_id"] + "</code></b> \n Для удаления сообщения скопируйте код, введите команду /delete_info и затем отправьте скопированный код."
                 await callback.message.answer(text, parse_mode='HTML')
             except Exception as ex:
-                print("Ошибка при отправке информации о принятии курсантами доведений " + str(ex))
+                print(strftime("%Y-%m-%d %H:%M:%S", gmtime()) + "Ошибка при отправке информации о принятии курсантами доведений " + str(ex))
     except Exception as ex:
         pass
     await callback.message.answer('<b>Если необходимо проверить конкретное доведение с деталями вставьте в поле для отправки сообщений уникальный номер доведения информации и нажмите кнопку "ОТПРАВИТЬ"</b>', reply_markup=kb.back_keyboard, parse_mode='HTML')
@@ -868,10 +869,10 @@ async def check_dovedenie_info(message: types.Message, state: FSMContext, bot: B
                     not_ok = not_ok + str(count_not_ok) + ". " + doc["Present"]["user_group"] + " " + doc["Present"]["user_lastname"] + " " + doc["Present"]["user_name"] + " " + doc["Present"]["user_middlename"] + ", \n"
                     count_not_ok = count_not_ok + 1
             except Exception as ex:
-                print("Ошибка при отправке информации о принятии курсантами доведений" + str(ex))
+                print(strftime("%Y-%m-%d %H:%M:%S", gmtime()) + "Ошибка при отправке информации о принятии курсантами доведений" + str(ex))
         await message.answer(all_ok + not_ok, reply_markup=kb.back_keyboard, parse_mode='HTML')
     except Exception as ex:
-        print("Ошибка при принятии информации: " + str(ex))
+        print(strftime("%Y-%m-%d %H:%M:%S", gmtime()) + "Ошибка при принятии информации: " + str(ex))
         tekst = open("Report/" + nachalnik['Present']['user_lastname'] + " info.html", 'w')
         tekst.write(all_ok + "<br>" + not_ok)
         tekst.close()
@@ -940,5 +941,5 @@ async def say_all_info(message: types.Message, state: FSMContext, bot: Bot):
                 error_people = error_people + doc["Present"]["user_group"] + " " + doc["Present"]["user_lastname"] + " " + doc["Present"]["user_name"] + " " + doc["Present"]["user_middlename"] + "\n"
             except Exception as ex:
                 pass
-            print("Ошибка при доведении информации: " + str(ex))
+            print(strftime("%Y-%m-%d %H:%M:%S", gmtime()) + "Ошибка при доведении информации: " + str(ex))
     await message.answer('Информация доведена всем, кроме следующих людей, заблокировавших работу с получением сообщений от ботов!' + error_people, reply_markup=kb.back_keyboard)
