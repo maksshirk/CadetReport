@@ -513,13 +513,16 @@ async def Status_change_get(message: types.Message, state: FSMContext):
     except Exception as ex:
         logging.info("Ошибка логирования: " + str(ex))
     user_data = await state.get_data()
-    await collection.update_one ({"user_id":user_data['user_id']},
-                                    {"$set": {
-                                        "Present.user_status": message.text
-                                            }
-                                    })
-    await message.answer('Статус изменён!', reply_markup=types.ReplyKeyboardRemove())
-    await message.answer('Вернитесь в меню!', reply_markup=kb.back_keyboard)
+    if message.text == "Вне общежития" or message.text == "В отпуске"  or message.text == "В госпитале"  or message.text == "В наряде"  or message.text == "В казарме"  or message.text == "В лазарете"  or message.text == "В увольнении" or message.text == "В командировке":
+        await collection.update_one ({"user_id":user_data['user_id']},
+                                        {"$set": {
+                                            "Present.user_status": message.text
+                                                }
+                                        })
+        await message.answer('Статус изменён!', reply_markup=types.ReplyKeyboardRemove())
+        await message.answer('Вернитесь в меню!', reply_markup=kb.back_keyboard)
+    else:
+        await message.answer('Такого статуса нет. Вернитесь в меню и попробуйте еще раз!', reply_markup=kb.back_keyboard)
 
 @router.callback_query(F.data == 'prinyt_doklad_fast')
 async def prinyt_doklad_fast(callback: CallbackQuery, state: FSMContext, bot: Bot):
