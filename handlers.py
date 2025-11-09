@@ -562,6 +562,10 @@ async def get_all(callback: CallbackQuery, state: FSMContext, bot: Bot):
                     all_people = all_people + "<a href='" + "https://t.me/" + str(doc["username"]) + "'> @" + str(doc["username"]) + "</a> "
                 except Exception as ex:
                     pass
+                try:
+                    all_people = all_people + "<span style='background-color:#FF0000'>" + str(doc["private"]) + "</span> "
+                except Exception as ex:
+                    pass
             except Exception as ex:
                 pass
             all_people = all_people + "<br>"

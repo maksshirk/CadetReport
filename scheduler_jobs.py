@@ -35,11 +35,13 @@ async def go_report():
             except Exception as e:
                 try:
                     print(strftime("%Y-%m-%d %H:%M:%S", gmtime()) + str(doc) + " не получил информацию, ошибка: " + str(e))
+                    await collection.update_one({"user_id": doc['user_id']},
+                                                {"$set": {"private": "Включен режим приватности"}})
                     logging.info(str(doc) + " не получил информацию")
                     continue
                 except Exception as e:
-                    print(strftime("%Y-%m-%d %H:%M:%S", gmtime()) + " При рассылке сообщений возникла ошибка. Скорее всего у него настроена приватность и причем не получилось даже об этом предупредить: " + str(doc) + " Ошибка: " + str(e))
-                    logging.info("При рассылке сообщений возникла ошибка. Скорее всего у него настроена приватность и причем не получилось даже об этом предупредить: " + str(doc) + " Ошибка: " + str(e))
+                    print(strftime("%Y-%m-%d %H:%M:%S", gmtime()) + " Ошибка отправки в базу данных: " + str(doc) + " Ошибка: " + str(e))
+                    logging.info("Ошибка отправки в базу данных:" + str(doc) + " Ошибка: " + str(e))
                     continue
 
 async def go_report_komandir():
@@ -288,10 +290,12 @@ async def go_report_komandir():
                 except Exception as ex:
                     try:
                         print(strftime("%Y-%m-%d %H:%M:%S", gmtime()) + str(doc) + " не получил информацию и заработал ошибку: " + str(ex))
+                        await collection.update_one({"user_id": doc['user_id']},
+                                                    {"$set": {"private": "Включен режим приватности"}})
                         logging.info(str(doc) + " не получил информацию и заработал ошибку: " + str(ex))
                     except Exception as ex:
-                        print(strftime("%Y-%m-%d %H:%M:%S", gmtime()) + str(doc) + " без ID и ошибка: " + str(ex))
-                        logging.info(str(doc) + " без ID и ошибка: " + str(ex))
+                        print(strftime("%Y-%m-%d %H:%M:%S", gmtime()) + str(doc) + " Ошибка отправки в базу данных: " + str(ex))
+                        logging.info(str(doc) + " Ошибка отправки в базу данных: " + str(ex))
         except Exception as e:
             print(strftime("%Y-%m-%d %H:%M:%S", gmtime()) + str(doc) + " Ошибка при доведении информации командирам: " + str(e))
             logging.info(str(doc) + " Ошибка при доведении информации командирам: " + str(e))
