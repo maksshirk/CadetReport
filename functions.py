@@ -5,7 +5,6 @@ from aiogram.types import FSInputFile
 from settings import YANDEX_TOKEN
 from yandex_geocoder import Client
 from geopy.distance import geodesic
-from moviepy import VideoFileClip, concatenate_videoclips
 
 async def search_or_save_user(collection, effective_user, message):
     user = await collection.find_one({"user_id": effective_user.id})

@@ -1,22 +1,20 @@
-import uuid, zipfile, asyncio, aioschedule
-from collections import defaultdict
-import os, datetime, logging, codecs
+import uuid
+import os, logging
 from aiogram import F, Router
 from aiogram import types, Bot
 from aiogram.filters.command import Command
 from aiogram.types import CallbackQuery
 from aiogram.fsm.state import State, StatesGroup
 from aiogram.fsm.context import FSMContext
-from settings import TG_TOKEN, MONGODB_LINK, PASSWORD_NKY, PASSWORD_KO, PASSWORD_KUG
+from settings import MONGODB_LINK, PASSWORD_NKY, PASSWORD_KO, PASSWORD_KUG
 import keyboards as kb
-#from run import bot
 from functions import *
 
 
 logging.basicConfig(level=logging.INFO, filename="py_log.log",filemode="a",
                     format="%(asctime)s %(levelname)s %(message)s")
 
-import motor.motor_asyncio, pymongo, settings
+import motor.motor_asyncio
 
 router = Router()
 cluster = motor.motor_asyncio.AsyncIOMotorClient(MONGODB_LINK)
@@ -728,7 +726,7 @@ async def dovedenie_start(message: types.Message, state: FSMContext, bot: Bot):
         })
     text_send = "От: " + nachalnik["Present"]["user_lastname"] + " " + nachalnik["Present"]["user_name"] + " " + nachalnik["Present"]["user_middlename"] + "\n<b>" + message.text + "</b>\nУникальный номер информации доведения: \n<b><code>" + uid + "</code></b>\nОн нужен для подтверждения принятия информации. Скопируйте его!"
     error_people = "\n Заблокировавшие работу с ботами: \n"
-    async for doc in cur:
+    async for doc in  cur:
         if doc['user_id'] == message.from_user.id:
             continue
         try:
@@ -792,7 +790,7 @@ async def check_dovedenie(callback: CallbackQuery, state: FSMContext, bot: Bot):
                 text = "Информация от: <b>" + doc["time"] + "</b>\n" + doc["info_message"] + "\n Уникальный код: <b><code>" + doc["info_id"] + "</code></b> \n Для удаления сообщения скопируйте код, введите команду /delete_info и затем отправьте скопированный код."
                 await callback.message.answer(text, parse_mode='HTML')
             except Exception as ex:
-                print("Ошибка при отправке информации о принятии курсантами доведений" + ex)
+                print("Ошибка при отправке информации о принятии курсантами доведений " + str(ex))
     except Exception as ex:
         pass
     await callback.message.answer('<b>Если необходимо проверить конкретное доведение с деталями вставьте в поле для отправки сообщений уникальный номер доведения информации и нажмите кнопку "ОТПРАВИТЬ"</b>', reply_markup=kb.back_keyboard, parse_mode='HTML')
@@ -870,7 +868,7 @@ async def check_dovedenie_info(message: types.Message, state: FSMContext, bot: B
                     not_ok = not_ok + str(count_not_ok) + ". " + doc["Present"]["user_group"] + " " + doc["Present"]["user_lastname"] + " " + doc["Present"]["user_name"] + " " + doc["Present"]["user_middlename"] + ", \n"
                     count_not_ok = count_not_ok + 1
             except Exception as ex:
-                print("Ошибка при отправке информации о принятии курсантами доведений" + ex)
+                print("Ошибка при отправке информации о принятии курсантами доведений" + str(ex))
         await message.answer(all_ok + not_ok, reply_markup=kb.back_keyboard, parse_mode='HTML')
     except Exception as ex:
         print("Ошибка при принятии информации: " + str(ex))
