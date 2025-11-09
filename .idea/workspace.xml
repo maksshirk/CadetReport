@@ -5,11 +5,6 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="6ee8723f-1caa-466f-abb6-1e2802cd2ad8" name="Changes" comment="0.82 Чуть-чуть прибрался">
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/functions.py" beforeDir="false" afterPath="$PROJECT_DIR$/functions.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/handlers.py" beforeDir="false" afterPath="$PROJECT_DIR$/handlers.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/main.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/run.py" beforeDir="false" afterPath="$PROJECT_DIR$/run.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/scheduler_jobs.py" beforeDir="false" afterPath="$PROJECT_DIR$/scheduler_jobs.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -101,7 +96,7 @@
       <workItem from="1762023244495" duration="8942000" />
       <workItem from="1762083624743" duration="123866000" />
       <workItem from="1762412207214" duration="56437000" />
-      <workItem from="1762688000577" duration="3763000" />
+      <workItem from="1762688000577" duration="5048000" />
     </task>
     <task id="LOCAL-00001" summary="Hello world для нового бота">
       <option name="closed" value="true" />
@@ -279,7 +274,15 @@
       <option name="project" value="LOCAL" />
       <updated>1762691838673</updated>
     </task>
-    <option name="localTasksCounter" value="23" />
+    <task id="LOCAL-00023" summary="0.82 Чуть-чуть прибрался">
+      <option name="closed" value="true" />
+      <created>1762693176266</created>
+      <option name="number" value="00023" />
+      <option name="presentableId" value="LOCAL-00023" />
+      <option name="project" value="LOCAL" />
+      <updated>1762693176266</updated>
+    </task>
+    <option name="localTasksCounter" value="24" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">

@@ -5,6 +5,7 @@ import keyboards as kb
 from aiogram.types import FSInputFile
 from geopy.distance import geodesic
 from time import gmtime, strftime
+import logging
 
 async def go_report():
     cur = collection.find()
@@ -27,16 +28,18 @@ async def go_report():
             number = "number " + time_of_day
             number = doc["Facts"][day][number]["number"]
         except Exception as e:
-            print(strftime("%Y-%m-%d %H:%M:%S", gmtime()) + "Обнаружен не доложивший. Пробую его предупредить: " + str(e))
+            print(strftime("%Y-%m-%d %H:%M:%S", gmtime()) + " Обнаружен не доложивший. Пробую его предупредить: " + str(e))
+            logging.info("Обнаружен не доложивший. Пробую его предупредить: " + str(doc))
             try:
                 await bot.send_message(chat_id=doc["user_id"], text="Приветствую! Не поступил доклад о состоянии дел, для отметки или изменения статуса нажми на кнопку ниже! Доброй ночи!", reply_markup=kb.go_report_keyboard)
             except Exception as e:
-                print(strftime("%Y-%m-%d %H:%M:%S", gmtime()) + "При рассылке сообщений возникла ошибка. Скорее всего у него настроена приватность: " + str(e))
                 try:
-                    print(strftime("%Y-%m-%d %H:%M:%S", gmtime()) + str(doc["user_id"]) + " не получил информацию")
+                    print(strftime("%Y-%m-%d %H:%M:%S", gmtime()) + str(doc) + " не получил информацию, ошибка: " + str(e))
+                    logging.info(str(doc) + " не получил информацию")
                     continue
                 except Exception as e:
-                    print(strftime("%Y-%m-%d %H:%M:%S", gmtime()) + "При рассылке сообщений возникла ошибка. Скорее всего у него настроена приватность и причем не получилось даже об этом предупредить: " + str(e))
+                    print(strftime("%Y-%m-%d %H:%M:%S", gmtime()) + " При рассылке сообщений возникла ошибка. Скорее всего у него настроена приватность и причем не получилось даже об этом предупредить: " + str(doc) + " Ошибка: " + str(e))
+                    logging.info("При рассылке сообщений возникла ошибка. Скорее всего у него настроена приватность и причем не получилось даже об этом предупредить: " + str(doc) + " Ошибка: " + str(e))
                     continue
 
 async def go_report_komandir():
@@ -82,14 +85,14 @@ async def go_report_komandir():
                         "Present.fakultet": fakultet
                     })
                 except Exception as e:
-                    print(strftime("%Y-%m-%d %H:%M:%S", gmtime()) + str(e))
+                    print(strftime("%Y-%m-%d %H:%M:%S", gmtime()) + "  Ошибка при поиске 1 " + str(e))
             if user_unit == "НФ" or user_unit == "ЗНФ":
                 try:
                     cursor = collection.find({
                         "Present.fakultet": fakultet
                     })
                 except Exception as e:
-                    print(strftime("%Y-%m-%d %H:%M:%S", gmtime()) + str(e))
+                    print(strftime("%Y-%m-%d %H:%M:%S", gmtime()) + "  Ошибка при поиске 2 " + str(e))
             if user_unit == "Командир учебной группы":
                 try:
                     cursor = collection.find({
@@ -98,7 +101,7 @@ async def go_report_komandir():
                         "Present.user_group": user_group
                     })
                 except Exception as e:
-                    print(strftime("%Y-%m-%d %H:%M:%S", gmtime()) + str(e))
+                    print(strftime("%Y-%m-%d %H:%M:%S", gmtime()) + "  Ошибка при поиске 3 " + str(e))
             if user_unit == "Командир 1 отд-я":
                 try:
                     cursor = collection.find({
@@ -108,7 +111,7 @@ async def go_report_komandir():
                         "Present.user_unit": "Курсант 1 отд-я"
                     })
                 except Exception as e:
-                    print(strftime("%Y-%m-%d %H:%M:%S", gmtime()) + str(e))
+                    print(strftime("%Y-%m-%d %H:%M:%S", gmtime()) + "  Ошибка при поиске 4 " + str(e))
             if user_unit == "Командир 2 отд-я":
                 try:
                     cursor = collection.find({
@@ -118,7 +121,7 @@ async def go_report_komandir():
                         "Present.user_unit": "Курсант 2 отд-я"
                     })
                 except Exception as e:
-                    print(strftime("%Y-%m-%d %H:%M:%S", gmtime()) + str(e))
+                    print(strftime("%Y-%m-%d %H:%M:%S", gmtime()) + "  Ошибка при поиске 5 " + str(e))
             if user_unit == "Командир 3 отд-я":
                 try:
                     cursor = collection.find({
@@ -128,16 +131,16 @@ async def go_report_komandir():
                         "Present.user_unit": "Курсант 3 отд-я"
                     })
                 except Exception as e:
-                    print(strftime("%Y-%m-%d %H:%M:%S", gmtime()) + str(e))
+                    print(strftime("%Y-%m-%d %H:%M:%S", gmtime()) + "  Ошибка при поиске 6 " + str(e))
             #cursor = cursor.sort("Present.user_group", 1)
             async for document in cursor:
                 if document["Present"]['user_unit'] == "Начальник курса" or document["Present"][
-                    'user_unit'] == "Курсовой офицер" or doc["Present"]['user_unit'] == "НФ" or document["Present"][
+                    'user_unit'] == "Курсовой офицер" or document["Present"]['user_unit'] == "НФ" or document["Present"][
                     'user_unit'] == "ЗНФ":
                     continue
                 if document["Present"]['user_status'] == "В наряде":
                     score_on_service = score_on_service + 1
-                    on_service = on_service + "\n<b>" + doc["Present"]["user_group"] + " " + str(
+                    on_service = on_service + "\n<b>" + document["Present"]["user_group"] + " " + str(
                         score_on_service) + ".</b>" + \
                                  document["Present"]["user_lastname"] + " " + document["Present"]["user_name"] + " " + \
                                  document["Present"][
@@ -145,7 +148,7 @@ async def go_report_komandir():
                     continue
                 if document["Present"]['user_status'] == "В лазарете":
                     score_lazaret = score_lazaret + 1
-                    lazaret = lazaret + "\n<b>" + doc["Present"]["user_group"] + " " + str(score_lazaret) + ".</b>" + \
+                    lazaret = lazaret + "\n<b>" + document["Present"]["user_group"] + " " + str(score_lazaret) + ".</b>" + \
                               document["Present"]["user_lastname"] + " " + document["Present"]["user_name"] + " " + \
                               document["Present"][
                                   "user_middlename"] + "<br>"
@@ -239,12 +242,17 @@ async def go_report_komandir():
             f = itog + not_ok + all_ok_daleko
             try:
                 await bot.send_message(chat_id=doc["user_id"], text=f, parse_mode='HTML', reply_markup=kb.back_keyboard)
-                print(strftime("%Y-%m-%d %H:%M:%S", gmtime()) + "До " + doc["user_id"] + " информация доведена")
+                print(strftime("%Y-%m-%d %H:%M:%S", gmtime()) + " До " + doc["user_id"] + " информация доведена")
+                logging.info("До " + doc["user_id"] + " информация доведена")
                 if doc["Present"]["user_lastname"] == "Широкопетлев":
-                    await bot.send_message(-1003246610130, text=f, parse_mode='HTML')
-                    print(strftime("%Y-%m-%d %H:%M:%S", gmtime()) + "До группы 93 курса информация доведена")
+                    try:
+                        await bot.send_message(-1003246610130, text=f, parse_mode='HTML')
+                        print(strftime("%Y-%m-%d %H:%M:%S", gmtime()) + " До группы 93 курса информация доведена")
+                        "До группы 93 курса информация доведена"
+                    except Exception as ex:
+                        print(strftime("%Y-%m-%d %H:%M:%S", gmtime()) + " До группы 93 курса информация не доведена, потому что ошибка: " + str(ex))
+                        logging.info("До группы 93 курса информация не доведена, потому что ошибка: " + str(ex))
             except Exception as ex:
-
                 itog = "Привет командир! \n На <b>" + day + " </b> обстановка следующая:<br>" + "<b>В системе зарегистрировано: </b>" + str(
                     score_otpusk + score_komandirovka + score_kazarma + score_lazaret + score_hospital + score_yvolnenie + score_on_service + score_vnekazarm) + "<br>" + \
                        "<b>Доклад поступил (включая отпуск, командировку, увольнение, госпиталь): </b>" + str(
@@ -264,17 +272,27 @@ async def go_report_komandir():
                 try:
                     await bot.send_document(doc["user_id"], tekst)
                     await bot.send_message(chat_id=doc["user_id"], text="Короткий доклад в файле выше.\n", reply_markup=kb.back_keyboard)
-                    print(strftime("%Y-%m-%d %H:%M:%S", gmtime()) + "До " + doc["user_id"] + " короткий доклад файлом доведен")
+                    print(strftime("%Y-%m-%d %H:%M:%S", gmtime()) + " До " + doc["user_id"] + " короткий доклад файлом доведен")
+                    logging.info("До " + doc["user_id"] + " короткий доклад файлом доведен")
                     if doc["Present"]["user_lastname"] == "Широкопетлев":
-                        await bot.send_document(-1003246610130, tekst)
-                        await bot.send_message(chat_id=-1003246610130, text="Короткий доклад в файле выше.\n",
-                                               reply_markup=kb.back_keyboard)
-                        print(strftime("%Y-%m-%d %H:%M:%S", gmtime()) + "До 93 курса доклад файлом доведен")
+                        try:
+                            await bot.send_document(-1003246610130, tekst)
+                            await bot.send_message(chat_id=-1003246610130, text="Короткий доклад в файле выше.\n",
+                                                   reply_markup=kb.back_keyboard)
+                            print(strftime("%Y-%m-%d %H:%M:%S", gmtime()) + " До 93 курса доклад файлом доведен")
+                            logging.info("До 93 курса доклад файлом доведен")
+                        except Exception as ex:
+                            print(strftime("%Y-%m-%d %H:%M:%S",
+                                           gmtime()) + " До группы 93 курса файл не доведен, потому что ошибка: " + str(ex))
+                            logging.info("До группы 93 курса файл не доведен, потому что ошибка: " + str(ex))
                 except Exception as ex:
                     try:
-                        print(strftime("%Y-%m-%d %H:%M:%S", gmtime()) + str(doc["user_id"]) + " не получил информацию и заработал ошибку: " + str(ex))
+                        print(strftime("%Y-%m-%d %H:%M:%S", gmtime()) + str(doc) + " не получил информацию и заработал ошибку: " + str(ex))
+                        logging.info(str(doc) + " не получил информацию и заработал ошибку: " + str(ex))
                     except Exception as ex:
-                        print(strftime("%Y-%m-%d %H:%M:%S", gmtime()) + "без ID и ошибка: " + str(ex))
+                        print(strftime("%Y-%m-%d %H:%M:%S", gmtime()) + str(doc) + " без ID и ошибка: " + str(ex))
+                        logging.info(str(doc) + " без ID и ошибка: " + str(ex))
         except Exception as e:
-            print(strftime("%Y-%m-%d %H:%M:%S", gmtime()) + "Ошибка при доведении информации командирам: " + str(e))
+            print(strftime("%Y-%m-%d %H:%M:%S", gmtime()) + str(doc) + " Ошибка при доведении информации командирам: " + str(e))
+            logging.info(str(doc) + " Ошибка при доведении информации командирам: " + str(e))
             pass

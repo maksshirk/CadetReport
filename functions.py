@@ -151,7 +151,7 @@ async def put_address_from_coords(collection, user_id, address):
 
                                     }})
     except Exception as e:
-        print(strftime("%Y-%m-%d %H:%M:%S", gmtime()) + "Ошибка в блоке отправки адреса базу данных: " + str(e))
+        print(strftime("%Y-%m-%d %H:%M:%S", gmtime()) + " Ошибка в блоке отправки адреса базу данных: " + str(e))
 
 async def save_kursant_address(collection, user_id):
     try:
@@ -161,7 +161,7 @@ async def save_kursant_address(collection, user_id):
                                             }
                                     })
     except Exception as e:
-        print(strftime("%Y-%m-%d %H:%M:%S", gmtime()) + "Ошибка в блоке изменения статуса адреса курсанта: " + str(e))
+        print(strftime("%Y-%m-%d %H:%M:%S", gmtime()) + " Ошибка в блоке изменения статуса адреса курсанта: " + str(e))
 
 async def reset_address(collection, user_id):
     try:
@@ -170,7 +170,7 @@ async def reset_address(collection, user_id):
                                         "Present.count": 0
                                     }})
     except Exception as e:
-        print(strftime("%Y-%m-%d %H:%M:%S", gmtime()) + "Ошибка в блоке обнуления адреса курсанта: " + str(e))
+        print(strftime("%Y-%m-%d %H:%M:%S", gmtime()) + " Ошибка в блоке обнуления адреса курсанта: " + str(e))
 
 
 

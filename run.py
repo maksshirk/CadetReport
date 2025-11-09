@@ -26,4 +26,4 @@ if __name__ == "__main__":
     try:
         asyncio.run(main())
     except KeyboardInterrupt:
-        print(strftime("%Y-%m-%d %H:%M:%S", gmtime()) + "Бот выключен.")
+        print(strftime("%Y-%m-%d %H:%M:%S", gmtime()) + " Бот выключен.")
