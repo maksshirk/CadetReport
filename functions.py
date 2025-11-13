@@ -52,6 +52,7 @@ async def save_kursant_anketa(collection, user_data):
     user_data["podgruppa"] = user_data["podgruppa"].replace("/", "-", count=-1)
     if user_data['position'] != "Курсант": check_present = 1
     if user_data['position'] == "Начальник курса" or user_data['position'] == "Курсовой офицер" or user_data['position'] == "Старшина курса": check_present = 3
+    if user_data['position'] == "Командир учебной группы" or user_data['position'] == "Командир 1 отд-я" or user_data['position'] == "Командир 2 отд-я" or user_data['position'] == "Командир 3 отд-я": check_present = 2
     await collection.update_one({'user_id': user_data['id']}, {'$set': {'Present': {
         'year_nabor': user_data['year_nabor'],
         'fakultet': user_data['fakultet'],
@@ -821,3 +822,68 @@ async def find_report_fast(collection, user_id, callback,kb):
         tekst = FSInputFile("Report/" + day + " " + time_of_day + " " + nachalnik['Present']['user_lastname'] + " fast.html")
         await callback.message.answer_document(tekst)
         await callback.message.answer("Короткий доклад в файле выше.\n", reply_markup=kb.back_keyboard)
+
+async def status_kursants(collection, user_id, callback,kb):
+    nachalnik = await collection.find_one({"user_id": user_id})
+    year_nabor = nachalnik['Present']['year_nabor']
+    fakultet = nachalnik['Present']['fakultet']
+    user_group = nachalnik['Present']['user_group']
+    user_unit = nachalnik['Present']['user_unit']
+    if user_unit == "Начальник курса" or user_unit == "Курсовой офицер" or user_unit == "Старшина курса":
+        cur = collection.find({
+            "Present.year_nabor": year_nabor,
+            "Present.fakultet": fakultet
+        })
+    if user_unit == "НФ" or user_unit == "ЗНФ":
+        cur = collection.find({
+            "Present.fakultet": fakultet
+        })
+    if user_unit == "Командир учебной группы":
+        cur = collection.find({
+            "Present.year_nabor": year_nabor,
+            "Present.fakultet": fakultet,
+            "Present.user_group": user_group
+        })
+    if user_unit == "Командир 1 отд-я":
+        cur = collection.find({
+            "Present.year_nabor": year_nabor,
+            "Present.fakultet": fakultet,
+            "Present.user_group": user_group,
+            "Present.user_unit": "Курсант 1 отд-я"
+        })
+    if user_unit == "Командир 2 отд-я":
+        cur = collection.find({
+            "Present.year_nabor": year_nabor,
+            "Present.fakultet": fakultet,
+            "Present.user_group": user_group,
+            "Present.user_unit": "Курсант 2 отд-я"
+        })
+    if user_unit == "Командир 3 отд-я":
+        cur = collection.find({
+            "Present.year_nabor": year_nabor,
+            "Present.fakultet": fakultet,
+            "Present.user_group": user_group,
+            "Present.user_unit": "Курсант 3 отд-я"
+        })
+    all_ok = "<b>Ваше подразделение:</b><br>\n"
+    score_all_ok = 1
+    cur = cur.sort("Present.user_group", 1)
+    async for doc in cur:
+        if doc["Present"]['user_unit'] == "Начальник курса" or doc["Present"]['user_unit'] == "Курсовой офицер" or doc["Present"]['user_unit'] == "НФ" or doc["Present"]['user_unit'] == "ЗНФ":
+            continue
+        try:
+            all_ok = all_ok + str(score_all_ok) + ". " + "<b>" + doc["Present"]["user_group"] + ". ID: <code>" + str(doc["user_id"]) + "</code></b> "+ doc["Present"]["user_lastname"] + " " + doc["Present"]["user_name"] + " " + doc["Present"]["user_middlename"] + ": <b>" + doc["Present"]["user_status"] + "</b><br>\n"
+            score_all_ok = score_all_ok + 1
+        except Exception as ex:
+            print(ex)
+    try:
+        await callback.message.answer(all_ok, parse_mode='HTML')
+    except Exception as ex:
+        tekst = open("Списки/" + nachalnik['Present']['user_lastname'] + ".html", 'w')
+        tekst.write(all_ok)
+        tekst.close()
+        tekst = FSInputFile(
+            "Списки/" + nachalnik['Present']['user_lastname'] + ".html")
+        await callback.message.answer_document(tekst)
+        await callback.message.answer("Много фамилий. Открывай файл выше.\n")
+    await callback.message.answer("Введите ID курсанта, которому необходимо изменить статус, либо вернитесь в меню!\n", reply_markup=kb.back_keyboard)

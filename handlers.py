@@ -43,6 +43,10 @@ class Status_change(StatesGroup):
     Status_change_get = State()
     Status_change_put = State()
 
+class Status_change_kursant(StatesGroup):
+    Status_change_kursant_get = State()
+    Status_change_kursant_put = State()
+
 class Address(StatesGroup):
     put_address = State()
     get_dop_address = State()
@@ -950,3 +954,49 @@ async def say_all_info(message: types.Message, state: FSMContext, bot: Bot):
                 pass
             print(strftime("%Y-%m-%d %H:%M:%S", gmtime()) + " Ошибка при доведении информации: " + str(ex))
     await message.answer('Информация доведена всем, кроме следующих людей, заблокировавших работу с получением сообщений от ботов!' + error_people, reply_markup=kb.back_keyboard)
+
+
+@router.callback_query(F.data == 'status_change_kursant')
+async def status_change_kursant(callback: CallbackQuery, state: FSMContext):
+    try:
+        logging.info("Пользователь с ID: " + str(callback.from_user.id) + " " + str(callback.from_user.last_name) + " " + str(callback.from_user.first_name) + " " + str(callback.from_user.username) + " меняет статус подчиненному")
+    except Exception as ex:
+        logging.info("Ошибка логирования: " + str(ex))
+    try:
+        await status_kursants(collection, callback.from_user.id, callback, kb)
+        await state.set_state(Status_change_kursant.Status_change_kursant_get)
+    except Exception as e:
+        await callback.message.answer('Ошибка, вернитесь в меню!', reply_markup=kb.back_keyboard)
+
+@router.message(Status_change_kursant.Status_change_kursant_get)
+async def Status_change_kursant_get(message: types.Message, state: FSMContext):
+    try:
+        logging.info("Пользователь с ID: " + str(message.from_user.id) + " " + str(message.from_user.last_name) + " " + str(message.from_user.first_name) + " " + str(message.from_user.username) + " выбрал курсанта для изменения статуса с ID: " + message.text)
+    except Exception as ex:
+        logging.info("Ошибка логирования: " + str(ex))
+    try:
+        kursant = await collection.find_one({"user_id": int(message.text)})
+        text = "Выбранный человек: " + kursant["Present"]["user_group"] + ". <b>ID: <code>" + str(kursant["user_id"]) + "</code></b> "+ kursant["Present"]["user_lastname"] + " " + kursant["Present"]["user_name"] + " " + kursant["Present"]["user_middlename"] + ": <b>" + kursant["Present"]["user_status"] + "</b>\nДля того чтобы изменить статус нажмите на одну из нижеуказанных кнопок. Если кнопки закрылись, нажмите на 'шоколадку' слева от кнопки отправить"
+        await message.answer(text, parse_mode='HTML', reply_markup=kb.status_keyboard)
+        await state.update_data(user_id=kursant['user_id'])
+        await state.set_state(Status_change_kursant.Status_change_kursant_put)
+    except Exception as e:
+        await message.answer('Ошибка, скорее всего введен неправильный ID, вернитесь в меню!', reply_markup=kb.back_keyboard)
+
+@router.message(Status_change_kursant.Status_change_kursant_put)
+async def Status_change_kursant_put(message: types.Message, state: FSMContext):
+    try:
+        logging.info("Пользователь с ID: " + str(message.from_user.id) + " " + str(message.from_user.last_name) + " " + str(message.from_user.first_name) + " " + str(message.from_user.username) + " меняет статус курсанту на: " + message.text)
+    except Exception as ex:
+        logging.info("Ошибка логирования: " + str(ex))
+    user_data = await state.get_data()
+    if message.text == "Вне общежития" or message.text == "В отпуске"  or message.text == "В госпитале"  or message.text == "В наряде"  or message.text == "В казарме"  or message.text == "В лазарете"  or message.text == "В увольнении" or message.text == "В командировке":
+        await collection.update_one ({"user_id":user_data['user_id']},
+                                        {"$set": {
+                                            "Present.user_status": message.text
+                                                }
+                                        })
+        await message.answer('Статус изменён!', reply_markup=types.ReplyKeyboardRemove())
+        await message.answer('Вернитесь в меню!', reply_markup=kb.back_keyboard)
+    else:
+        await message.answer('Такого статуса нет. Вернитесь в меню и попробуйте еще раз!', reply_markup=kb.back_keyboard)

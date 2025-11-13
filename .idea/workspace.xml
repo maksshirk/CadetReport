@@ -6,7 +6,11 @@
   <component name="ChangeListManager">
     <list default="true" id="6ee8723f-1caa-466f-abb6-1e2802cd2ad8" name="Changes" comment="0.82 Чуть-чуть прибрался">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/functions.py" beforeDir="false" afterPath="$PROJECT_DIR$/functions.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/handlers.py" beforeDir="false" afterPath="$PROJECT_DIR$/handlers.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/initializator.py" beforeDir="false" afterPath="$PROJECT_DIR$/initializator.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/keyboards.py" beforeDir="false" afterPath="$PROJECT_DIR$/keyboards.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/run.py" beforeDir="false" afterPath="$PROJECT_DIR$/run.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -54,6 +58,7 @@
   &quot;keyToString&quot;: {
     &quot;DefaultHtmlFileTemplate&quot;: &quot;HTML File&quot;,
     &quot;JavaScript Debug.02-11-2025 morning Широкопетлев.html.executor&quot;: &quot;Run&quot;,
+    &quot;JavaScript Debug.Яндекс обстановка на 08.11.2025 вечер Иваню.html.executor&quot;: &quot;Run&quot;,
     &quot;ModuleVcsDetector.initialDetectionPerformed&quot;: &quot;true&quot;,
     &quot;Python.handlers.executor&quot;: &quot;Run&quot;,
     &quot;Python.main.executor&quot;: &quot;Run&quot;,
@@ -97,7 +102,9 @@
       <workItem from="1762023244495" duration="8942000" />
       <workItem from="1762083624743" duration="123866000" />
       <workItem from="1762412207214" duration="56437000" />
-      <workItem from="1762688000577" duration="12643000" />
+      <workItem from="1762688000577" duration="14060000" />
+      <workItem from="1762795096791" duration="2702000" />
+      <workItem from="1762887082947" duration="9816000" />
     </task>
     <task id="LOCAL-00001" summary="Hello world для нового бота">
       <option name="closed" value="true" />
@@ -299,7 +306,15 @@
       <option name="project" value="LOCAL" />
       <updated>1762705988347</updated>
     </task>
-    <option name="localTasksCounter" value="26" />
+    <task id="LOCAL-00026" summary="0.82 Чуть-чуть прибрался">
+      <option name="closed" value="true" />
+      <created>1762714574497</created>
+      <option name="number" value="00026" />
+      <option name="presentableId" value="LOCAL-00026" />
+      <option name="project" value="LOCAL" />
+      <updated>1762714574497</updated>
+    </task>
+    <option name="localTasksCounter" value="27" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -343,6 +358,6 @@
   <component name="com.intellij.coverage.CoverageDataManagerImpl">
     <SUITE FILE_PATH="coverage/CadetReport$main.coverage" NAME="main Coverage Results" MODIFIED="1761815231256" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/CadetReport$handlers.coverage" NAME="handlers Coverage Results" MODIFIED="1761851487098" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
-    <SUITE FILE_PATH="coverage/CadetReport$run.coverage" NAME="run Coverage Results" MODIFIED="1762701866252" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/CadetReport$run.coverage" NAME="run Coverage Results" MODIFIED="1763069972220" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
   </component>
 </project>
